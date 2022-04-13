@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+
+# Virtual environments
+.venv
+env/
+venv/
+
+# Environments
+.env
+local.env
+
+# VS code
+.vscode
+
+# PyCharm
+.idea
+
+# Volumes
+data/
+
+# Mac
+.DS_Store
+
+# Sqlite
+*.sqlite3
+
+# Log files
+*log
+
+# Kubernetes configmaps
+infra/configmaps.yaml

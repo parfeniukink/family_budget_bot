@@ -1,0 +1,9 @@
+.dockerignore
+.git/
+.github/
+compose/
+.flake8
+.pre-commit-hooks.yaml
+.docker-compose.yaml
+Dockerfile
+README.md

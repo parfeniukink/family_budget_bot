@@ -1,16 +1,21 @@
 [tool.poetry]
-name = ""
+name = "family_budget_bot"
 version = "0.1.0"
 description = ""
 authors = ["Dmytro Parfeniuk <parfeniukink@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pyTelegramBotAPI = "4.4.0"
+loguru = "0.6.0"
+psycopg2-binary = "2.9.3"
+pydantic = "1.9.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
 black = "^22.3.0"
 isort = "^5.10.1"
+ipdb = "^0.13.9"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -46,5 +51,5 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
-skip = '.venv,venv,env,migrations'
-src_paths = []
+skip = '.venv,venv,env'
+src_paths = ["src"]

@@ -1,5 +1,5 @@
 from contextlib import contextmanager, suppress
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
 
 import psycopg2
 from loguru import logger

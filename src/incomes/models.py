@@ -4,7 +4,7 @@ from decimal import Decimal
 from shared.collections import Model
 
 
-class Cost(Model):
+class Income(Model):
     id: int
     name: str
     value: Decimal

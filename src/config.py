@@ -20,3 +20,5 @@ API_KEY = getenv("API_KEY", default="invalid")
 DEFAULT_SEND_SETTINGS = {"disable_web_page_preview": True, "parse_mode": "HTML"}
 
 bot = TeleBot(API_KEY)
+
+DATES_KEYBOARD_LEN: int = int(getenv("DATES_KEYBOARD_LEN", default=10))

@@ -21,11 +21,11 @@ class Database(Protocol):
         ...
         """Create database if not exist"""
 
-    def insert(self, table: str, values: dict[str, Any]) -> None:
+    def insert(self, table: str, values: dict[str, Any]) -> dict:
         ...
 
     def fetch(self, table: str, column: str, value: Any) -> dict:
         ...
 
-    def fetchall(self, table: str, columns: Optional[str]) -> dict:
+    def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
         ...

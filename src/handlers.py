@@ -36,3 +36,13 @@ def help(m: types.Message):
         text=messages.HELP_TEXT,
         **DEFAULT_SEND_SETTINGS,
     )
+
+
+@bot.message_handler(commands=["stop"])
+def stop(m: types.Message):
+    bot.send_message(
+        m.chat.id,
+        reply_markup=default_keyboard(),
+        text="Operation permitted",
+        **DEFAULT_SEND_SETTINGS,
+    )

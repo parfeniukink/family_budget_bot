@@ -49,15 +49,18 @@ class Postgres:
             logger.info("Creating new tables")
             self.__create_new_tables()
 
-    def insert(self, table: str, data: dict[str, Any]) -> None:
+    def insert(self, table: str, data: dict[str, Any]) -> dict:
         columns = ", ".join(str(k) for k in data.keys())
         values = ", ".join(
             [v if v.isdigit() else "".join(["'", v, "'"]) for value in data.values() if (v := str(value))]
         )
-        q = f"INSERT INTO {table} ({columns}) VALUES ({values})"
+        q = f"INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING id"
 
         with self.cursor() as cursor:
             cursor.execute(q)
+            id_of_new_row = cursor.fetchone()[0]
+
+        return data | {"id": id_of_new_row}
 
     def __fetch_data_as_dict(self, data: list[tuple], description: tuple) -> list[dict]:
         columns = [d[0] for d in description]
@@ -71,6 +74,16 @@ class Postgres:
             results.append(dict_row)
 
         return results
+
+    def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
+        q = f"SELECT {columns or '*'} FROM {table}"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            data: list[tuple] = cursor.fetchall()
+            with suppress(IndexError):
+                return self.__fetch_data_as_dict(data, cursor.description)
+            return []
 
     def fetch(self, table: str, column: str, value: Any) -> Optional[dict]:
         q = f"SELECT * FROM {table} WHERE {column} = {value}"

@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS incomes(
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS equities(
+CREATE TABLE IF NOT EXISTS equity(
     id SERIAL PRIMARY KEY,
     currency VARCHAR(3) NOT NULL,
     value NUMERIC NOT NULL
@@ -65,7 +65,7 @@ INSERT INTO categories (name) VALUES
     ('Other'),
     ('Currency transactions');
 
-INSERT INTO equities (currency, value) VALUES
+INSERT INTO equity (currency, value) VALUES
     ('uah', 0.0),
     ('usd', 0.0);
 

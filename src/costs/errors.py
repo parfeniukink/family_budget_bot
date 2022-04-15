@@ -1,5 +1,6 @@
 from typing import Optional
 
+from loguru import logger
 from telebot import types
 
 from config import DEFAULT_SEND_SETTINGS, bot
@@ -22,6 +23,7 @@ def costs_eror_handler(func):
         try:
             return func(m, *args, **kwargs)
         except CostsError as err:
+            logger.error(err)
             bot.send_message(
                 m.chat.id,
                 reply_markup=default_keyboard(),

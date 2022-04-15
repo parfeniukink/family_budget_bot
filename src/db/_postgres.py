@@ -49,31 +49,15 @@ class Postgres:
             logger.info("Creating new tables")
             self.__create_new_tables()
 
-    def insert(self, table: str, data: dict[str, Any]) -> dict:
-        columns = ", ".join(str(k) for k in data.keys())
-        values = ", ".join(
-            [v if v.isdigit() else "".join(["'", v, "'"]) for value in data.values() if (v := str(value))]
-        )
-        q = f"INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING id"
-
-        with self.cursor() as cursor:
-            cursor.execute(q)
-            id_of_new_row = cursor.fetchone()[0]
-
-        return data | {"id": id_of_new_row}
-
     def __fetch_data_as_dict(self, data: list[tuple], description: tuple) -> list[dict]:
-        columns = [d[0] for d in description]
-        results = []
-
-        for item in data:
-            dict_row = {}
-            for index, column in enumerate(columns):
-                dict_row[column] = item[index]
-
-            results.append(dict_row)
-
+        results = [{k[0]: v for k, v in zip(description, d)} for d in data]
         return results
+
+    def raw_execute(self, q: str) -> tuple:
+        with self.cursor() as cursor:
+            cursor.execute(rf"{q} RETURNING *")
+            data = cursor.fetchone()
+        return [d[0] for d in cursor.description], data
 
     def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
         q = f"SELECT {columns or '*'} FROM {table}"
@@ -86,6 +70,7 @@ class Postgres:
             return []
 
     def fetch(self, table: str, column: str, value: Any) -> Optional[dict]:
+        value = value if str(value).isdigit() else "".join(("'", value, "'"))
         q = f"SELECT * FROM {table} WHERE {column} = {value}"
 
         with self.cursor() as cursor:
@@ -95,3 +80,32 @@ class Postgres:
                 results = self.__fetch_data_as_dict(data, cursor.description)
                 return results[0]
             return None
+
+    def insert(self, table: str, data: dict[str, Any]) -> dict:
+        columns = ", ".join(str(k) for k in data.keys())
+        values = ", ".join(
+            [v if v.isdigit() else "".join(["'", v, "'"]) for value in data.values() if (v := str(value))]
+        )
+        q = f"INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING *"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            execution_result = cursor.fetchone()
+
+        result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
+
+        return result
+
+    def update(self, table: str, data: tuple[str, Any], condition: tuple[str, Any]) -> dict:
+        f_data = "=".join([data[0], fd if (fd := str(data[1])).isdigit() else "".join(["'", fd, "'"])])
+        f_condition = "=".join([condition[0], fd if (fd := str(condition[1])).isdigit() else "".join(["'", fd, "'"])])
+
+        q = f"UPDATE {table} SET {f_data} WHERE {f_condition} RETURNING *"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            execution_result = cursor.fetchone()
+
+        result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
+
+        return result

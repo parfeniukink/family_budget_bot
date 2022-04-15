@@ -6,6 +6,7 @@ from config import database
 from configurations import ConfigurationsService
 from costs.errors import CostsError
 from costs.models import Category, Cost
+from equity.services import EquityService
 from users.models import User
 from users.services import UsersService
 
@@ -15,7 +16,8 @@ class CategoriesCache(type):
 
     @classmethod
     def get_categories(cls) -> list[Category]:
-        return [Category(**item) for item in database.fetchall(cls.CATEGORIES_TABLE)]
+        data = [Category(**item) for item in database.fetchall(cls.CATEGORIES_TABLE)]
+        return data
 
     def __getattr__(cls, attr):
         if attr == "CACHED_CATEGORIES":
@@ -80,19 +82,22 @@ class CostsService:
             raise CostsError("Money value is invalid")
 
     def save_costs(self) -> Cost:
-        if not self._text or not self._date or not self._category or not self._user or not self._category:
+        if not self._text or not self._date or not self._category or not self._user:
             raise CostsError("One or more mandatory values are not set")
 
-        currency: str = ConfigurationsService.get_by_name("default_currency").value
+        default_currency: str = ConfigurationsService.get_by_name("default_currency").value
         payload = {
             "name": self._text,
             "value": self._value,
-            "currency": currency,
+            "currency": default_currency,
             "date": self._date,
             "user_id": self._user.id,
             "category_id": self._category.id,
         }
         data: dict = database.insert(self.__COSTS_TABLE, payload)
+        costs = Cost(**data)
+
+        EquityService.update(costs)
 
         return Cost(**data)
 

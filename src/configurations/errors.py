@@ -1,5 +1,6 @@
 from typing import Optional
 
+from loguru import logger
 from telebot import types
 
 from config import DEFAULT_SEND_SETTINGS, bot
@@ -22,6 +23,7 @@ def configuration_error_handler(func):
         try:
             return func(m, *args, **kwargs)
         except ConfigurationError as err:
+            logger.error(err)
             bot.send_message(
                 m.chat.id,
                 reply_markup=default_keyboard(),

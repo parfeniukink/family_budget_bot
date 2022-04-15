@@ -33,6 +33,22 @@ CREATE TABLE IF NOT EXISTS incomes(
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS equities(
+    id SERIAL PRIMARY KEY,
+    currency VARCHAR(3) NOT NULL,
+    value NUMERIC NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS configurations(
+    id SERIAL PRIMARY KEY,
+    key VARCHAR(100) NOT NULL,
+    value VARCHAR(255) NOT NULL
+);
+
+
+/* ************************ */
+/* Database population */ 
+/* ************************ */
 
 INSERT INTO categories (name) VALUES
     ('Food'),
@@ -48,3 +64,10 @@ INSERT INTO categories (name) VALUES
     ('Technical stuff'),
     ('Other'),
     ('Currency transactions');
+
+INSERT INTO equities (currency, value) VALUES
+    ('uah', 0.0),
+    ('usd', 0.0);
+
+INSERT INTO configurations (key, value) VALUES
+    ('default_currency', 'uah');

@@ -27,7 +27,7 @@ def select_configuration(m: types.Message):
         raise ConfigurationError("Invalid configuration selected")
     bot.send_message(
         m.chat.id,
-        reply_markup=configurations_update_keyboard(),
+        reply_markup=types.ReplyKeyboardRemove(),
         text="Enter new value for configuration",
     )
     bot.register_next_step_handler_by_chat_id(chat_id=m.chat.id, callback=update_configuration, name=m.text)

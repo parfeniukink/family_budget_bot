@@ -1,10 +1,11 @@
 from loguru import logger
 
 from config import bot, database
+from configurations.handlers import *  # noqa
 from costs.handlers import *  # noqa
+from equity.handlers import *  # noqa
 from handlers import *  # noqa
 from incomes.handlers import *  # noqa
-from configurations.handlers import *  # noqa
 
 # Init database
 database.init()

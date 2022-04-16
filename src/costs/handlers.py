@@ -5,12 +5,7 @@ from configurations import configuration_error_handler
 from costs.errors import costs_eror_handler
 from costs.keyboards import categories_keyboard
 from costs.services import CostsService
-from keyboards import (
-    confirmation_keyboard,
-    dates_keyboard,
-    decline_keyboard,
-    default_keyboard,
-)
+from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.costs import KeyboardButtons
 
 
@@ -43,7 +38,7 @@ def add_text(m: types.Message, costs_service: CostsService):
     costs_service.add_text(m.text)
     bot.send_message(
         m.chat.id,
-        reply_markup=decline_keyboard(),
+        reply_markup=types.ReplyKeyboardRemove(),
         text=f"Description added: {m.text}\nEnter the value",
     )
     bot.register_next_step_handler_by_chat_id(
@@ -58,7 +53,7 @@ def select_date(m: types.Message, costs_service: CostsService):
     costs_service.set_date(m.text)
     bot.send_message(
         m.chat.id,
-        reply_markup=decline_keyboard(),
+        reply_markup=types.ReplyKeyboardRemove(),
         text=f"Date: {m.text}\nEnter the description",
     )
     bot.register_next_step_handler_by_chat_id(

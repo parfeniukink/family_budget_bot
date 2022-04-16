@@ -5,6 +5,7 @@ from telebot import types
 from config import DATES_KEYBOARD_LEN
 from shared.configurations import KeyboardButtons as ConfigurationsKB
 from shared.costs import KeyboardButtons as CostsKB
+from shared.equity import KeyboardButtons as EquityKB
 from shared.incomes import KeyboardButtons as IncomesKB
 
 
@@ -16,6 +17,8 @@ def default_keyboard() -> types.ReplyKeyboardMarkup:
     for button in IncomesKB.values():
         markup.add(types.KeyboardButton(button))
     for button in ConfigurationsKB.values():
+        markup.add(types.KeyboardButton(button))
+    for button in EquityKB.values():
         markup.add(types.KeyboardButton(button))
 
     return markup
@@ -38,7 +41,7 @@ def confirmation_keyboard() -> types.ReplyKeyboardMarkup:
 def dates_keyboard() -> types.ReplyKeyboardMarkup:
     dates = [date.today() - timedelta(days=i) for i in range(DATES_KEYBOARD_LEN)]
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     for d in dates:
         markup.add(types.KeyboardButton(str(d)))
 

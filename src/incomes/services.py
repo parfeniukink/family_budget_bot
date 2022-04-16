@@ -30,7 +30,7 @@ class IncomesService:
             raise IncomesError("Value is not added")
 
         try:
-            self._value = Decimal(text)
+            self._value = Decimal(text.replace(",", "."))
         except InvalidOperation:
             raise IncomesError("Money value is invalid")
 

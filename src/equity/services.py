@@ -7,12 +7,22 @@ from incomes import Income
 
 
 class EquityService:
-    EQUITY_TABLE = "equity"
+    TABLE = "equity"
+
+    @classmethod
+    def get_formatted(cls) -> str:
+        data = database.fetchall(cls.TABLE)
+        equity_all = (Equity(**d) for d in data)
+
+        f_equity = "\n".join((" ➙ ".join([e.currency, e.value]) for e in equity_all))
+        result = "\n\n".join(("Equity:", f_equity))
+
+        return result
 
     @classmethod
     def update(cls, instance: Union[Cost, Income]) -> Equity:
         operation = "-" if isinstance(instance, Cost) else "+"
-        q = f"UPDATE {cls.EQUITY_TABLE} SET value=value{operation}{instance.value} WHERE currency='{instance.currency}'"
+        q = f"UPDATE {cls.TABLE} SET value=value{operation}{instance.value} WHERE currency='{instance.currency}'"
 
         columns, execution_data = database.raw_execute(q)
 

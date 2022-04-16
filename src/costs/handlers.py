@@ -3,9 +3,14 @@ from telebot import types
 from config import bot
 from configurations import configuration_error_handler
 from costs.errors import costs_eror_handler
-from costs.keyboards import categories_keyboard, dates_keyboard
+from costs.keyboards import categories_keyboard
 from costs.services import CostsService
-from keyboards import confirmation_keyboard, decline_keyboard, default_keyboard
+from keyboards import (
+    confirmation_keyboard,
+    dates_keyboard,
+    decline_keyboard,
+    default_keyboard,
+)
 from shared.costs import KeyboardButtons
 
 

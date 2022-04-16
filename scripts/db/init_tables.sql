@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS equity(
 CREATE TABLE IF NOT EXISTS configurations(
     id SERIAL PRIMARY KEY,
     key VARCHAR(100) NOT NULL,
-    value VARCHAR(255) NOT NULL
+    value VARCHAR(255)
 );
 
 
@@ -70,4 +70,5 @@ INSERT INTO equity (currency, value) VALUES
     ('usd', 0.0);
 
 INSERT INTO configurations (key, value) VALUES
-    ('default_currency', 'uah');
+    ('default_currency', 'uah'),
+    ('income_sources', null);

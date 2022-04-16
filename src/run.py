@@ -3,6 +3,8 @@ from loguru import logger
 from config import bot, database
 from costs.handlers import *  # noqa
 from handlers import *  # noqa
+from incomes.handlers import *  # noqa
+from configurations.handlers import *  # noqa
 
 # Init database
 database.init()

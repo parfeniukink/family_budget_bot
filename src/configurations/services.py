@@ -1,6 +1,9 @@
+from typing import Optional
+
 from config import database
 from configurations.errors import ConfigurationError
 from configurations.models import Configuration
+from shared.configurations.constants import Configurations, DefaultCurrencies
 
 
 class ConfigurationsCache(type):
@@ -19,6 +22,7 @@ class ConfigurationsCache(type):
 
 
 class ConfigurationsService(metaclass=ConfigurationsCache):
+    TABLE = "configurations"
     CACHED_CONFIGURATIONS: list[Configuration]
 
     @classmethod
@@ -27,3 +31,26 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
             if configuration.key == name:
                 return configuration
         raise ConfigurationError(f"No such confuguration {name}")
+
+    @classmethod
+    def get_all_formatted(cls) -> str:
+        configurations = "\n".join([f"{c.key}: {c.value}" for c in cls.CACHED_CONFIGURATIONS])
+        return f"Active configuratoins:\n\n{configurations}"
+
+    @classmethod
+    def data_is_valid(cls, data: tuple[str, Optional[str]]) -> None:
+        if len(data) != 2:
+            raise ConfigurationError("Invalid configuratoin update payload")
+        if data[0] not in Configurations.values():
+            raise ConfigurationError("Invalid configuratoin selected")
+
+        if data[0] == Configurations.DEFAULT_CURRENCY.value and data[1] not in DefaultCurrencies.values():
+            raise ConfigurationError("Invalid currency")
+
+    @classmethod
+    def update(cls, data: tuple[str, Optional[str]]) -> Configuration:
+        cls.data_is_valid(data)
+        if len(data) > 2:
+            raise ConfigurationError("Invalid configuratoin update payload")
+        instance = database.update(cls.TABLE, data=("value", data[1]), condition=("key", data[0]))
+        return Configuration(**instance)

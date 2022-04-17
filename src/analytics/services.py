@@ -41,9 +41,7 @@ class AnalitycsService(metaclass=AnalyticsCache):
     def get_formatted_dates(cls) -> set[str]:
         """Return the list of dates from the first saved cost to today in format YEAR-MONTH"""
         if not cls.FIRST_DATE:
-            cls.FIRST_DATE = cls.get_first_date()
-            if not cls.FIRST_DATE:
-                raise AnalyticsError("Currently we do not have any costs in database")
+            raise AnalyticsError("Currently we do not have any costs in database")
 
         end: date = date.today()
         data = {(cls.FIRST_DATE + timedelta(_)).strftime(cls.DATE_FORMAT) for _ in range((end - cls.FIRST_DATE).days)}

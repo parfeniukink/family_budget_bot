@@ -1,0 +1,111 @@
+import os
+import sqlite3
+from contextlib import contextmanager, suppress
+from pathlib import Path
+from typing import Any, Optional
+
+import psycopg2
+from loguru import logger
+
+from db.constants import SCRIPTS_FOLDER
+from db.models import ConnectionData
+
+ROOT_DIR = Path(__file__).parent.parent.parent
+DB_NAME = "db.sqlite3"
+
+
+class SQLite:
+    def __init__(self, connection_data: ConnectionData) -> None:
+        self._connection_data = connection_data
+
+    def _get_connection(self) -> Any:
+        return sqlite3.connect(os.path.join(ROOT_DIR / DB_NAME), check_same_thread=False)
+
+    @contextmanager
+    def cursor(self):
+        """Database cursoor context manager"""
+        connection = self._get_connection()
+        try:
+            yield connection.cursor()
+        finally:
+            if connection:
+                connection.commit()
+                connection.close()
+
+    def __create_new_tables(self) -> None:
+        filename = SCRIPTS_FOLDER / "init_tables.sql"
+        with open(filename) as f:
+            query = f.read()
+        with self.cursor() as cursor:
+            cursor.executescript(query)
+        logger.success("Tables created")
+
+    def init(self) -> None:
+        try:
+            with self.cursor() as cursor:
+                cursor.execute("SELECT * FROM users")
+            logger.info("Tables exist")
+        except sqlite3.OperationalError:
+            logger.info("Creating new tables")
+            self.__create_new_tables()
+
+    def __fetch_data_as_dict(self, data: list[tuple], description: tuple) -> list[dict]:
+        results = [{k[0]: v for k, v in zip(description, d)} for d in data]
+        return results
+
+    def raw_execute(self, q: str) -> list[dict]:
+        with self.cursor() as cursor:
+            cursor.execute(rf"{q}")
+            data = cursor.fetchall()
+        return [{k[0]: v for k, v in zip(cursor.description, d)} for d in data]
+
+    def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
+        q = f"SELECT {columns or '*'} FROM {table}"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            data: list[tuple] = cursor.fetchall()
+            with suppress(IndexError):
+                return self.__fetch_data_as_dict(data, cursor.description)
+            return []
+
+    def fetch(self, table: str, column: str, value: Any) -> Optional[dict]:
+        value = value if str(value).isdigit() else "".join(("'", value, "'"))
+        q = f"SELECT * FROM {table} WHERE {column} = {value}"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            data: list[tuple] = cursor.fetchall()
+            with suppress(IndexError):
+                results = self.__fetch_data_as_dict(data, cursor.description)
+                return results[0]
+            return None
+
+    def insert(self, table: str, data: dict[str, Any]) -> dict:
+        columns = ", ".join(str(k) for k in data.keys())
+        values = ", ".join(
+            [v if v.isdigit() else "".join(["'", v, "'"]) for value in data.values() if (v := str(value))]
+        )
+        q = f"INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING *"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            execution_result = cursor.fetchone()
+
+        result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
+
+        return result
+
+    def update(self, table: str, data: tuple[str, Any], condition: tuple[str, Any]) -> dict:
+        f_data = "=".join([data[0], fd if (fd := str(data[1])).isdigit() else "".join(["'", fd, "'"])])
+        f_condition = "=".join([condition[0], fd if (fd := str(condition[1])).isdigit() else "".join(["'", fd, "'"])])
+
+        q = f"UPDATE {table} SET {f_data} WHERE {f_condition} RETURNING *"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            execution_result = cursor.fetchone()
+
+        result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
+
+        return result

@@ -7,6 +7,7 @@ SCRIPTS_FOLDER = Path(__file__).parent.parent.parent / "scripts/db"
 
 class DB_ENGINES(Enum):
     POSTGRES = "postgresql"
+    SQLITE = "sqlite"
 
 
 DB_REGEX = (

@@ -1,4 +1,4 @@
-from typing import Any, ContextManager, Iterable, Optional, Protocol, Union
+from typing import Any, ContextManager, Optional, Protocol
 
 from db.models import ConnectionData
 
@@ -21,7 +21,7 @@ class Database(Protocol):
         ...
         """Create database if not exist"""
 
-    def raw_execute(self, q: str) -> tuple:
+    def raw_execute(self, q: str) -> list[dict]:
         ...
 
     def fetch(self, table: str, column: str, value: Any) -> dict:

@@ -1,7 +1,7 @@
 from telebot import types
 
 from config import bot
-from configurations.errors import ConfigurationError
+from configurations.errors import ConfigurationError, configuration_error_handler
 from configurations.keyboards import (
     ConfigurationMenu,
     configurations_keyboard,
@@ -13,6 +13,7 @@ from shared.configurations.constants import Configurations
 from shared.configurations.keyboards import KeyboardButtons
 
 
+@configuration_error_handler
 def update_configuration(m: types.Message, name: str):
     configuration = ConfigurationsService.update(data=(name, m.text))
     bot.send_message(
@@ -22,6 +23,7 @@ def update_configuration(m: types.Message, name: str):
     )
 
 
+@configuration_error_handler
 def select_configuration(m: types.Message):
     if m.text not in Configurations.values():
         raise ConfigurationError("Invalid configuration selected")
@@ -33,6 +35,7 @@ def select_configuration(m: types.Message):
     bot.register_next_step_handler_by_chat_id(chat_id=m.chat.id, callback=update_configuration, name=m.text)
 
 
+@configuration_error_handler
 def select_action(m: types.Message):
     if m.text not in ConfigurationMenu.values():
         raise ConfigurationError("Invalid action")
@@ -56,6 +59,7 @@ def select_action(m: types.Message):
 
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.CONFIGURATIONS.value}")
+@configuration_error_handler
 def configurations(m: types.Message):
     bot.send_message(
         m.chat.id,

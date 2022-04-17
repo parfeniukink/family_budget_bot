@@ -52,5 +52,12 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
         cls.data_is_valid(data)
         if len(data) > 2:
             raise ConfigurationError("Invalid configuratoin update payload")
-        instance = database.update(cls.TABLE, data=("value", data[1]), condition=("key", data[0]))
-        return Configuration(**instance)
+
+        update_data: dict = database.update(cls.TABLE, data=("value", data[1]), condition=("key", data[0]))
+        configuration = Configuration(**update_data)
+
+        for c in cls.CACHED_CONFIGURATIONS:
+            if c.id == configuration.id:
+                c.value = configuration.value
+
+        return configuration

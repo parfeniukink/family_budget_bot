@@ -71,4 +71,4 @@ INSERT INTO equity (currency, value) VALUES
 
 INSERT INTO configurations (key, value) VALUES
     ('default_currency', 'uah'),
-    ('income_sources', null);
+    ('income_sources', '');

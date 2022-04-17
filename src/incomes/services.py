@@ -3,10 +3,10 @@ from decimal import Decimal, InvalidOperation
 from typing import Optional
 
 from config import database
-from configurations import ConfigurationsService
 from equity import EquityService
 from incomes.errors import IncomesError
 from incomes.models import Income
+from shared.finances import Currencies
 from users import User, UsersService
 
 
@@ -18,12 +18,22 @@ class IncomesService:
         self._date: Optional[date] = None
         self._name: Optional[str] = None
         self._value: Optional[Decimal] = None
+        self._currency: Optional[str] = None
 
     def set_name(self, text: str = None) -> None:
         if text is None:
             raise IncomesError("Category is not selected")
 
         self._name = text
+
+    def set_currency(self, text: str = None) -> None:
+        if text is None:
+            raise IncomesError("Value is not added")
+
+        if text not in Currencies.values():
+            raise IncomesError("Invalid currency")
+
+        self._currency = Currencies.get_database_value(text)
 
     def set_value(self, text: str = None) -> None:
         if text is None:
@@ -44,14 +54,13 @@ class IncomesService:
             raise IncomesError("Invalid date")
 
     def save_incomes(self):
-        if not self._name or not self._date or not self._user:
+        if not self._name or not self._date or not self._user or not self._value or not self._currency:
             raise IncomesError("One or more mandatory values are not set")
 
-        default_currency: str = ConfigurationsService.get_by_name("default_currency").value
         payload = {
             "name": self._name,
             "value": self._value,
-            "currency": default_currency,
+            "currency": self._currency,
             "date": self._date,
             "user_id": self._user.id,
         }

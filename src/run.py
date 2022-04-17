@@ -1,5 +1,6 @@
 from loguru import logger
 
+from analytics.handlers import *  # noqa
 from config import bot, database
 from configurations.handlers import *  # noqa
 from costs.handlers import *  # noqa

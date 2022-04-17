@@ -1,5 +1,8 @@
+import calendar
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
+from itertools import groupby
+from operator import attrgetter
 from typing import Optional
 
 from config import database
@@ -39,8 +42,13 @@ class CategoriesService(metaclass=CategoriesCache):
 
 
 class CostsService:
+    __DATE_FROAMT = "%Y-%m-%d"
+    __MONTHLY_DATE_FROAMT = "%Y-%m"
+    __COSTS_TABLE = "costs"
+
     def __init__(self, account_id: int) -> None:
         self.__DATE_FROAMT = "%Y-%m-%d"
+        self.__MONTHLY_DATE_FROAMT = "%Y-%m"
         self.__COSTS_TABLE = "costs"
         self._user: Optional[User] = UsersService.fetch_user(account_id)
         self._category: Optional[Category] = None
@@ -86,6 +94,7 @@ class CostsService:
             raise CostsError("One or more mandatory values are not set")
 
         default_currency: str = ConfigurationsService.get_by_name("default_currency").value
+
         payload = {
             "name": self._text,
             "value": self._value,
@@ -107,3 +116,28 @@ class CostsService:
 
         self.save_costs()
         return True
+
+    @classmethod
+    def get_monthly_costs(cls, date: str) -> dict[str, list[Cost]]:
+        """
+        Return the list of costs for the specific month by currency.
+        Used mostly for analytics.
+        date: str -- date in format YEAR-MONTH and
+        """
+        try:
+            datetime.strptime(date, cls.__MONTHLY_DATE_FROAMT)
+        except ValueError:
+            raise CostsError("Invalid monthly date format")
+
+        year, month = date.split("-")
+        _, last_day = calendar.monthrange(int(year), int(month))
+
+        start_date = "-".join((date, "01"))
+        end_date = "-".join((date, str(last_day)))
+
+        q = f"SELECT * from {cls.__COSTS_TABLE} WHERE date >='{start_date}' and date <= '{end_date}'"
+        data = database.raw_execute(q)
+        costs = [Cost(**item) for item in data]
+
+        costs_by_currency = groupby(costs, attrgetter("currency"))
+        return {currency: list(costs_iter) for currency, costs_iter in costs_by_currency}

@@ -2,7 +2,7 @@ from telebot import types
 
 from config import bot
 from incomes.errors import incomes_eror_handler
-from incomes.keyboards import imcome_sources_keyboard
+from incomes.keyboards import currencies_keyboard, income_sources_keyboard
 from incomes.services import IncomesService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.incomes import KeyboardButtons
@@ -17,12 +17,25 @@ def confirmation(m: types.Message, service: IncomesService):
 
 
 @incomes_eror_handler
-def set_value(m: types.Message, service: IncomesService):
-    service.set_value(m.text)
-    bot.send_message(m.chat.id, text=f"Value: {m.text}\n\nPlease confirm:", reply_markup=confirmation_keyboard())
+def set_currency(m: types.Message, service: IncomesService):
+    service.set_currency(m.text)
+
+    bot.send_message(m.chat.id, text=f"Currency: {m.text}\n\nPlease confirm:", reply_markup=confirmation_keyboard())
+
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
         callback=confirmation,
+        service=service,
+    )
+
+
+@incomes_eror_handler
+def set_value(m: types.Message, service: IncomesService):
+    service.set_value(m.text)
+    bot.send_message(m.chat.id, text=f"Value: {m.text}", reply_markup=currencies_keyboard())
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=set_currency,
         service=service,
     )
 

@@ -22,9 +22,10 @@ class EquityService:
     @classmethod
     def update(cls, instance: Union[Cost, Income]) -> Equity:
         operation = "-" if isinstance(instance, Cost) else "+"
-        q = f"UPDATE {cls.TABLE} SET value=value{operation}{instance.value} WHERE currency='{instance.currency}'"
+        q = (
+            f"UPDATE {cls.TABLE} SET value=value{operation}{instance.value} "
+            f"WHERE currency='{instance.currency}' RETURNING *"
+        )
 
-        columns, execution_data = database.raw_execute(q)
-
-        data = {k: v for k, v in zip(columns, execution_data)}
+        data = database.raw_execute(q)[0]
         return Equity(**data)

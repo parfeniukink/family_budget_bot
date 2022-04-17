@@ -1,8 +1,10 @@
 from datetime import date, timedelta
+from itertools import chain
 
 from telebot import types
 
 from config import DATES_KEYBOARD_LEN
+from shared.analytics import KeyboardButtons as AnalyticsKB
 from shared.configurations import KeyboardButtons as ConfigurationsKB
 from shared.costs import KeyboardButtons as CostsKB
 from shared.equity import KeyboardButtons as EquityKB
@@ -11,15 +13,17 @@ from shared.incomes import KeyboardButtons as IncomesKB
 
 def default_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for button in chain(
+        CostsKB.values(),
+        IncomesKB.values(),
+        AnalyticsKB.values(),
+        EquityKB.values(),
+        ConfigurationsKB.values(),
+    ):
+        markup.add(types.KeyboardButton(button))
+
     markup.add(types.KeyboardButton("/help"))
-    for button in CostsKB.values():
-        markup.add(types.KeyboardButton(button))
-    for button in IncomesKB.values():
-        markup.add(types.KeyboardButton(button))
-    for button in ConfigurationsKB.values():
-        markup.add(types.KeyboardButton(button))
-    for button in EquityKB.values():
-        markup.add(types.KeyboardButton(button))
 
     return markup
 

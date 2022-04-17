@@ -53,11 +53,11 @@ class Postgres:
         results = [{k[0]: v for k, v in zip(description, d)} for d in data]
         return results
 
-    def raw_execute(self, q: str) -> tuple:
+    def raw_execute(self, q: str) -> list[dict]:
         with self.cursor() as cursor:
-            cursor.execute(rf"{q} RETURNING *")
-            data = cursor.fetchone()
-        return [d[0] for d in cursor.description], data
+            cursor.execute(rf"{q}")
+            data = cursor.fetchall()
+        return [{k[0]: v for k, v in zip(cursor.description, d)} for d in data]
 
     def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
         q = f"SELECT {columns or '*'} FROM {table}"

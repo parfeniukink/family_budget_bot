@@ -63,6 +63,8 @@ class AnalitycsService(metaclass=AnalyticsCache):
             percent = (total_costs * Decimal("100") / total_sum).quantize(Decimal("0.1"))
             text += f"    <i>({percent})%</i>"
 
+        text += f"\n\nTotal costs: {str(total_sum)}"
+
         return text
 
     @classmethod

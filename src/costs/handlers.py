@@ -2,14 +2,14 @@ from telebot import types
 
 from config import bot
 from configurations import configuration_error_handler
-from costs.errors import costs_eror_handler
 from costs.keyboards import categories_keyboard
 from costs.services import CostsService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.costs import KeyboardButtons
+from shared.errors import user_error_handler
 
 
-@costs_eror_handler
+@user_error_handler
 @configuration_error_handler
 def confirmation(m: types.Message, costs_service: CostsService):
     processed: bool = costs_service.process_confirmation(m.text)
@@ -18,7 +18,7 @@ def confirmation(m: types.Message, costs_service: CostsService):
     bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=message)
 
 
-@costs_eror_handler
+@user_error_handler
 def add_value(m: types.Message, costs_service: CostsService):
     costs_service.add_value(m.text)
     bot.send_message(
@@ -33,7 +33,7 @@ def add_value(m: types.Message, costs_service: CostsService):
     )
 
 
-@costs_eror_handler
+@user_error_handler
 def add_text(m: types.Message, costs_service: CostsService):
     costs_service.add_text(m.text)
     bot.send_message(
@@ -48,7 +48,7 @@ def add_text(m: types.Message, costs_service: CostsService):
     )
 
 
-@costs_eror_handler
+@user_error_handler
 def select_date(m: types.Message, costs_service: CostsService):
     costs_service.set_date(m.text)
     bot.send_message(
@@ -63,7 +63,7 @@ def select_date(m: types.Message, costs_service: CostsService):
     )
 
 
-@costs_eror_handler
+@user_error_handler
 def select_category(m: types.Message, costs_service: CostsService):
     costs_service.set_category(m.text)
     bot.send_message(
@@ -79,7 +79,7 @@ def select_category(m: types.Message, costs_service: CostsService):
 
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_COST.value}")
-@costs_eror_handler
+@user_error_handler
 def add_costs(m: types.Message):
     bot.send_message(
         m.chat.id,

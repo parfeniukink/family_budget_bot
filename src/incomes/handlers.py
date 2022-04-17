@@ -1,14 +1,14 @@
 from telebot import types
 
 from config import bot
-from incomes.errors import incomes_eror_handler
-from incomes.keyboards import currencies_keyboard, income_sources_keyboard
+from incomes.keyboards import currencies_keyboard
 from incomes.services import IncomesService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
+from shared.errors import user_error_handler
 from shared.incomes import KeyboardButtons
 
 
-@incomes_eror_handler
+@user_error_handler
 def confirmation(m: types.Message, service: IncomesService):
     processed: bool = service.process_confirmation(m.text)
     message = "Incomes saved" if processed else "Incomes wasn't added"
@@ -16,7 +16,7 @@ def confirmation(m: types.Message, service: IncomesService):
     bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=message)
 
 
-@incomes_eror_handler
+@user_error_handler
 def set_currency(m: types.Message, service: IncomesService):
     service.set_currency(m.text)
 
@@ -29,7 +29,7 @@ def set_currency(m: types.Message, service: IncomesService):
     )
 
 
-@incomes_eror_handler
+@user_error_handler
 def set_value(m: types.Message, service: IncomesService):
     service.set_value(m.text)
     bot.send_message(m.chat.id, text=f"Value: {m.text}", reply_markup=currencies_keyboard())
@@ -40,7 +40,7 @@ def set_value(m: types.Message, service: IncomesService):
     )
 
 
-@incomes_eror_handler
+@user_error_handler
 def set_name(m: types.Message, service: IncomesService):
     service.set_name(m.text)
     bot.send_message(
@@ -54,7 +54,7 @@ def set_name(m: types.Message, service: IncomesService):
     )
 
 
-@incomes_eror_handler
+@user_error_handler
 def set_date(m: types.Message, service: IncomesService):
     service.set_date(m.text)
     bot.send_message(
@@ -70,7 +70,7 @@ def set_date(m: types.Message, service: IncomesService):
 
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_INCOME.value}")
-@incomes_eror_handler
+@user_error_handler
 def add_incomes(m: types.Message):
     bot.send_message(
         m.chat.id,

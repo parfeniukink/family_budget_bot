@@ -118,6 +118,11 @@ class CostsService:
         return True
 
     @classmethod
+    def get_costs_by_currency(cls, costs: list[Cost]):
+        attr = "currency"
+        return groupby(sorted(costs, key=attrgetter(attr)), key=attrgetter(attr))
+
+    @classmethod
     def get_monthly_costs(cls, date: str) -> dict[str, list[Cost]]:
         """
         Return the list of costs for the specific month by currency.
@@ -139,5 +144,4 @@ class CostsService:
         data = database.raw_execute(q)
         costs = [Cost(**item) for item in data]
 
-        costs_by_currency = groupby(costs, attrgetter("currency"))
-        return {currency: list(costs_iter) for currency, costs_iter in costs_by_currency}
+        return {currency: list(costs_iter) for currency, costs_iter in cls.get_costs_by_currency(costs)}

@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS configurations(
 INSERT INTO categories (name) VALUES
     ('Food'),
     ('Restaurants'),
+    ('Food delivery'),
     ('Roads'),
     ('Clothes'),
     ('Car'),
@@ -71,4 +72,4 @@ INSERT INTO equity (currency, value) VALUES
 
 INSERT INTO configurations (key, value) VALUES
     ('default_currency', 'uah'),
-    ('income_sources', '');
+    ('income_sources', 'Other');

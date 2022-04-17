@@ -1,3 +1,5 @@
+from time import sleep
+
 from loguru import logger
 
 from analytics.handlers import *  # noqa
@@ -8,9 +10,20 @@ from equity.handlers import *  # noqa
 from handlers import *  # noqa
 from incomes.handlers import *  # noqa
 
-# Init database
+# NOTE: Init database
 database.init()
 
-# Start bot
-logger.info("Bot started 🚀")
-bot.polling(none_stop=True, interval=0)
+
+# NOTE: Start bot
+def start_bot():
+    try:
+        logger.info("Bot started 🚀")
+        bot.polling(none_stop=True, interval=0)
+    except Exception:
+        logger.error("🔴 Bot is down.\nRestarting...")
+        logger.info("Sleeping for 10 seconds")
+        sleep(2)
+        start_bot()
+
+
+start_bot()

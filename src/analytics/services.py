@@ -4,8 +4,8 @@ from decimal import Decimal
 from itertools import groupby
 from operator import attrgetter
 from typing import Optional
-from analytics.errors import AnalyticsError
 
+from analytics.errors import AnalyticsError
 from config import database
 from costs import Cost
 from costs.models import Category
@@ -41,7 +41,9 @@ class AnalitycsService(metaclass=AnalyticsCache):
     def get_formatted_dates(cls) -> set[str]:
         """Return the list of dates from the first saved cost to today in format YEAR-MONTH"""
         if not cls.FIRST_DATE:
-            raise AnalyticsError("Currently we do not have any costs in database")
+            cls.FIRST_DATE = cls.get_first_date()
+            if not cls.FIRST_DATE:
+                raise AnalyticsError("Currently we do not have any costs in database")
 
         end: date = date.today()
         data = {(cls.FIRST_DATE + timedelta(_)).strftime(cls.DATE_FORMAT) for _ in range((end - cls.FIRST_DATE).days)}

@@ -19,7 +19,8 @@ def start_bot():
     try:
         logger.info("Bot started 🚀")
         bot.polling(none_stop=True, interval=0)
-    except Exception:
+    except Exception as err:
+        logger.error(err)
         logger.error("🔴 Bot is down.\nRestarting...")
         logger.info("Sleeping for 30 seconds")
         sleep(30)

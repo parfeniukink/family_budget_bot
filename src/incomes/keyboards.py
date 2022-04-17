@@ -1,5 +1,6 @@
 from telebot import types
 
+from config import HELP_BUTTON
 from configurations import ConfigurationsService
 from shared.configurations import Configurations
 from shared.finances import Currencies
@@ -11,6 +12,8 @@ def currencies_keyboard() -> types.ReplyKeyboardMarkup:
     for currency in Currencies.values():
         markup.add(types.KeyboardButton(currency))
 
+    markup.add(HELP_BUTTON)
+
     return markup
 
 
@@ -21,5 +24,7 @@ def income_sources_keyboard() -> types.ReplyKeyboardMarkup:
 
     for source in sources:
         markup.add(types.KeyboardButton(source))
+
+    markup.add(HELP_BUTTON)
 
     return markup

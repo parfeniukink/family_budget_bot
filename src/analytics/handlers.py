@@ -1,6 +1,6 @@
 from telebot import types
 
-from analytics.errors import AnalyticsError, costs_eror_handler
+from analytics.errors import AnalyticsError
 from analytics.keyboards import (
     AnalyticsDetailOptions,
     AnalyticsOptions,
@@ -12,9 +12,10 @@ from analytics.services import AnalitycsService
 from config import DEFAULT_SEND_SETTINGS, bot
 from keyboards import default_keyboard
 from shared.analytics import KeyboardButtons
+from shared.errors import user_error_handler
 
 
-@costs_eror_handler
+@user_error_handler
 def monthly_dispatcher(m: types.Message, month: str):
     if m.text not in AnalyticsDetailOptions.values():
         raise AnalyticsError()
@@ -34,7 +35,7 @@ def monthly_dispatcher(m: types.Message, month: str):
     )
 
 
-@costs_eror_handler
+@user_error_handler
 def by_date_callback(m: types.Message):
     if not m.text:
         raise AnalyticsError("Date is not selected")
@@ -51,7 +52,7 @@ def by_date_callback(m: types.Message):
     )
 
 
-@costs_eror_handler
+@user_error_handler
 def analytics_dispatcher(m: types.Message):
     if m.text not in AnalyticsOptions.values():
         raise AnalyticsError()
@@ -73,7 +74,7 @@ def analytics_dispatcher(m: types.Message):
 
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ANALYTICS.value}")
-@costs_eror_handler
+@user_error_handler
 def add_costs(m: types.Message):
     bot.send_message(
         m.chat.id,

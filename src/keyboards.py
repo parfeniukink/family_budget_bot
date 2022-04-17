@@ -3,7 +3,7 @@ from itertools import chain
 
 from telebot import types
 
-from config import DATES_KEYBOARD_LEN
+from config import DATES_KEYBOARD_LEN, HELP_BUTTON
 from shared.analytics import KeyboardButtons as AnalyticsKB
 from shared.configurations import KeyboardButtons as ConfigurationsKB
 from shared.costs import KeyboardButtons as CostsKB
@@ -23,14 +23,8 @@ def default_keyboard() -> types.ReplyKeyboardMarkup:
     ):
         markup.add(types.KeyboardButton(button))
 
-    markup.add(types.KeyboardButton("/help"))
+    markup.add(HELP_BUTTON)
 
-    return markup
-
-
-def decline_keyboard() -> types.ReplyKeyboardMarkup:
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(types.KeyboardButton("/stop"))
     return markup
 
 
@@ -48,5 +42,7 @@ def dates_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     for d in dates:
         markup.add(types.KeyboardButton(str(d)))
+
+    markup.add(HELP_BUTTON)
 
     return markup

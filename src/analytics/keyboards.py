@@ -1,6 +1,7 @@
 from telebot import types
 
 from analytics.services import AnalitycsService
+from config import HELP_BUTTON
 from shared.collections import Enum
 
 
@@ -19,6 +20,8 @@ def analytics_keyboard() -> types.ReplyKeyboardMarkup:
     for choise in AnalyticsOptions.values():
         markup.add(types.KeyboardButton(choise))
 
+    markup.add(HELP_BUTTON)
+
     return markup
 
 
@@ -36,5 +39,7 @@ def analytics_dates_detail_keyboard() -> types.ReplyKeyboardMarkup:
 
     for choise in AnalyticsDetailOptions.values():
         markup.add(types.KeyboardButton(choise))
+
+    markup.add(HELP_BUTTON)
 
     return markup

@@ -31,6 +31,8 @@ def analytics_dates_keyboard() -> types.ReplyKeyboardMarkup:
     for date in AnalitycsService.get_formatted_dates():
         markup.add(types.KeyboardButton(date))
 
+    markup.add(HELP_BUTTON)
+
     return markup
 
 

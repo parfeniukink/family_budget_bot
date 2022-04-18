@@ -20,4 +20,6 @@ RUN pip install --upgrade pip \
 RUN poetry config virtualenvs.create false \
     && poetry install
 
-COPY ./ ./
+COPY . .
+
+CMD ["python", "src/run.py"]

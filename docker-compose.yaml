@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:13.3
+    container_name: family_budget_bot_postgres
+    env_file: ".env"
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+
+  bot:
+    build: .
+    image: family_budget_bot_app
+    container_name: family_budget_bot_app
+    env_file: ".env"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app/

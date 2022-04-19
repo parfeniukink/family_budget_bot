@@ -8,8 +8,21 @@ from db.protocols import Database
 
 
 class DatabasesService:
-    def __init__(self, connection_url: str) -> None:
-        self._connection_url = connection_url
+    def __init__(
+        self,
+        host="postgres",
+        port=5432,
+        username="postgres",
+        password="postgres",
+        dbname="postgres",
+    ) -> None:
+        self._host = host
+        self._port = port
+        self._username = username
+        self._password = password
+        self._dbname = dbname
+
+        self._connection_url = ""
         self.connection_url_match: re.Match = self.__get_connection_url_match()
 
     def __get_connection_url_match(self) -> re.Match:
@@ -38,11 +51,11 @@ class DatabasesService:
     def connection_data(self) -> ConnectionData:
         try:
             return ConnectionData(
-                host=self.connection_url_match.group("db_hostname"),
-                port=int(self.connection_url_match.group("db_port")),
-                username=self.connection_url_match.group("db_username"),
-                password=self.connection_url_match.group("db_password"),
-                dbname=self.connection_url_match.group("db_name"),
+                host=self._host,
+                port=self._port,
+                username=self._username,
+                password=self._password,
+                dbname=self._dbname,
             )
         except IndexError:
             raise DatabaseError("Something wrong with regex")

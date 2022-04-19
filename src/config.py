@@ -8,7 +8,11 @@ from db import Database, DatabasesService
 # Database
 ##############################################
 database_service = DatabasesService(
-    connection_url=getenv("DATABASE_URL", default="invalid"),
+    host=getenv("POSTGRES_HOST"),
+    port=int(getenv("POSTGRES_PORT", "5432")),
+    username=getenv("POSTGRES_USER"),
+    password=getenv("POSTGRES_PASSWORD"),
+    dbname=getenv("POSTGRES_DB"),
 )
 database: Database = database_service.get_database()
 

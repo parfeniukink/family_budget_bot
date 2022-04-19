@@ -24,13 +24,13 @@ class Database(Protocol):
     def raw_execute(self, q: str) -> list[dict]:
         ...
 
-    def fetch(self, table: str, column: str, value: Any) -> dict:
+    def fetch(self, table: str, column: str, value: Any) -> Optional[dict]:
         ...
 
     def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
         ...
 
-    def insert(self, table: str, values: dict[str, Any]) -> dict:
+    def insert(self, table: str, data: dict[str, Any]) -> dict:
         ...
 
     def update(self, table: str, data: tuple[str, Any], condition: tuple[str, Any]) -> dict:

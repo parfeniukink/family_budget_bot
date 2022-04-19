@@ -22,4 +22,4 @@ RUN poetry config virtualenvs.create false \
 
 COPY . .
 
-CMD ["python", "src/run.py"]
+CMD sleep 3 && python src/run.py

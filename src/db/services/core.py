@@ -23,7 +23,7 @@ class DatabasesService:
         self._dbname = dbname
 
         self._connection_url = ""
-        self.connection_url_match: re.Match = self.__get_connection_url_match()
+        self.connection_url_match = None
 
     def __get_connection_url_match(self) -> re.Match:
         try:
@@ -41,7 +41,8 @@ class DatabasesService:
             raise DatabaseError(f'Port is invalid integer. Database connection string "{self._connection_url}".')
 
     def get_database(self) -> Database:
-        engine = self.connection_url_match.group("db_engine")
+        # engine = self.connection_url_match.group("db_engine")
+        engine = "postgresql"
         if engine == DB_ENGINES.POSTGRES.value:
             return Postgres(self.connection_data)
 

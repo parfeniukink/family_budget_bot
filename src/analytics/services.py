@@ -44,8 +44,12 @@ class AnalitycsService(metaclass=AnalyticsCache):
             raise AnalyticsError("Currently we do not have any costs in database")
 
         end: date = date.today()
-        data = {(cls.FIRST_DATE + timedelta(_)).strftime(cls.DATE_FORMAT) for _ in range((end - cls.FIRST_DATE).days)}
+        if all([cls.FIRST_DATE.year == end.year, cls.FIRST_DATE.month == end.month]):
+            return {
+                cls.FIRST_DATE.strftime(cls.DATE_FORMAT),
+            }
 
+        data = {(cls.FIRST_DATE + timedelta(_)).strftime(cls.DATE_FORMAT) for _ in range((end - cls.FIRST_DATE).days)}
         return data
 
     @classmethod

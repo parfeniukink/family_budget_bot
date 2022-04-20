@@ -18,18 +18,32 @@ class AnalyticsCache(type):
     COSTS_TABLE = "costs"
 
     @classmethod
-    def get_first_date(cls) -> Optional[date]:
+    def get_dates(cls) -> Optional[tuple[date, date]]:
         data = database.raw_execute(f"SELECT date from {cls.COSTS_TABLE} ORDER BY date ASC LIMIT 1")
         try:
-            return data[0]["date"]
+            return data[0]["date"], data[-1]["date"]
         except IndexError:
             return None
 
     def __getattr__(cls, attr):
-        if attr == "FIRST_DATE":
-            data = cls.get_first_date()
-            setattr(cls, attr, data)
-            return data
+        if attr == "FIRST_DATE" or attr == "LAST_DATE":
+            dates = cls.get_dates()
+
+            if not dates:
+                return None
+
+            first_date = dates[0]
+            last_date = dates[1]
+
+            setattr(cls, "FIRST_DATE", first_date)
+            setattr(cls, "LAST_DATE", last_date)
+
+            if attr == "FIRST_DATE":
+                return first_date
+
+            if attr == "LAST_DATE":
+                return last_date
+
         raise AttributeError(attr)
 
 
@@ -40,16 +54,19 @@ class AnalitycsService(metaclass=AnalyticsCache):
     @classmethod
     def get_formatted_dates(cls) -> set[str]:
         """Return the list of dates from the first saved cost to today in format YEAR-MONTH"""
-        if not cls.FIRST_DATE:
+        if not cls.FIRST_DATE or not cls.LAST_DATE:
             raise AnalyticsError("Currently we do not have any costs in database")
 
-        end: date = date.today()
+        end: date = cls.LAST_DATE
         if all([cls.FIRST_DATE.year == end.year, cls.FIRST_DATE.month == end.month]):
             return {
                 cls.FIRST_DATE.strftime(cls.DATE_FORMAT),
             }
 
         data = {(cls.FIRST_DATE + timedelta(_)).strftime(cls.DATE_FORMAT) for _ in range((end - cls.FIRST_DATE).days)}
+        import ipdb
+
+        ipdb.set_trace(context=10)
         return data
 
     @classmethod

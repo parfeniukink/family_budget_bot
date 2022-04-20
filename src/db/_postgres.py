@@ -53,6 +53,10 @@ class Postgres:
         results = [{k[0]: v for k, v in zip(description, d)} for d in data]
         return results
 
+    def execute(self, q: str) -> None:
+        with self.cursor() as cursor:
+            cursor.execute(rf"{q}")
+
     def raw_execute(self, q: str) -> list[dict]:
         with self.cursor() as cursor:
             cursor.execute(rf"{q}")

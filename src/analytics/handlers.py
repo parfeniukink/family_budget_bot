@@ -27,6 +27,14 @@ def monthly_dispatcher(m: types.Message, month: str):
     elif m.text == AnalyticsDetailOptions.DETAILED.value:
         report = AnalitycsService.get_monthly_detailed_report(month)
 
+    if len(report) > 4000:
+        bot.send_message(
+            m.chat.id,
+            reply_markup=default_keyboard(),
+            text="Only basic report is allowed",
+            **DEFAULT_SEND_SETTINGS,
+        )
+
     bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),

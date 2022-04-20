@@ -34,3 +34,9 @@ data/
 
 # Kubernetes configmaps
 infra/configmaps.yaml
+
+# Static files
+*.xlsx
+
+# Test files
+transfer.py

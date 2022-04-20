@@ -21,6 +21,9 @@ class Database(Protocol):
         ...
         """Create database if not exist"""
 
+    def execute(self, q: str) -> None:
+        ...
+
     def raw_execute(self, q: str) -> list[dict]:
         ...
 

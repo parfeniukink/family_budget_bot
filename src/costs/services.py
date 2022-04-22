@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from itertools import groupby
 from operator import attrgetter
-from typing import Optional
+from typing import Iterable, Optional
 
 from config import database
 from configurations import ConfigurationsService
@@ -118,7 +118,7 @@ class CostsService:
         return True
 
     @classmethod
-    def get_costs_by_currency(cls, costs: list[Cost]):
+    def get_costs_by_currency(cls, costs: list[Cost]) -> Iterable:
         attr = "currency"
         return groupby(sorted(costs, key=attrgetter(attr)), key=attrgetter(attr))
 
@@ -140,7 +140,7 @@ class CostsService:
         start_date = "-".join((date, "01"))
         end_date = "-".join((date, str(last_day)))
 
-        q = f"SELECT * from {cls.__COSTS_TABLE} WHERE date >='{start_date}' and date <= '{end_date}'"
+        q = f"SELECT * from {cls.__COSTS_TABLE} WHERE date >='{start_date}' and date <= '{end_date}' ORDER BY date ASC"
         data = database.raw_execute(q)
         costs = [Cost(**item) for item in data]
 

@@ -4,6 +4,7 @@ from config import database
 from costs.models import Cost
 from equity.models import Equity
 from incomes import Income
+from shared.strings import get_number_in_frames
 
 
 class EquityService:
@@ -14,7 +15,7 @@ class EquityService:
         data = database.fetchall(cls.TABLE)
         equity_all = (Equity(**d) for d in data)
 
-        f_equity = "\n".join((" ➙ ".join([e.currency, e.value]) for e in equity_all))
+        f_equity = "\n".join((" ➙ ".join([e.currency, get_number_in_frames(e.value)]) for e in equity_all))
         result = "\n\n".join(("Equity:", f_equity))
 
         return result

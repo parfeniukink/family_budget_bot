@@ -7,8 +7,8 @@ class DatabaseCurrencies(Enum):
 
 
 class Currencies(Enum):
-    UAH = "UAH 🇺🇦"
-    USD = "$ USD $"
+    UAH = "🇺🇦 UAH 🇺🇦"
+    USD = "🇺🇸 USD 🇺🇸"
 
     @classmethod
     def get_database_value(cls, value: str) -> str:

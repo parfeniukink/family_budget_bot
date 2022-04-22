@@ -1,5 +1,5 @@
 from operator import getitem
-from typing import Hashable, Sequence, TypeVar
+from typing import Generator, Hashable, Iterable, Sequence, TypeVar
 
 from shared.collections import Model
 
@@ -24,3 +24,13 @@ def build_dict_from_sequence(seq: Sequence[_Member], key: str) -> dict[Hashable,
         return {getattr(element, key): element for element in seq}
 
     raise ValueError("Unsupported type for build operation")
+
+
+def without_duplicates(sequence: Iterable) -> Generator:
+    data = set()
+
+    for el in sequence:
+        if el not in data:
+            yield el
+            data.add(el)
+        continue

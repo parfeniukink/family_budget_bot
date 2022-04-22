@@ -1,0 +1,16 @@
+CATEGORIES_EMOJI = {
+    "Food": "🍽",
+    "Restaurants": "🥗",
+    "Food delivery": "🍔",
+    "Roads": "🚌",
+    "Clothes": "👚",
+    "Car": "🚙",
+    "Fuel": "⛽️",
+    "Household": "🪴",
+    "Rents": "🤝",
+    "Services": "💳",
+    "Leisure": "🏝",
+    "Technical stuff": "💻",
+    "Other": "📦",
+    "Currency transactions": "🔄",
+}

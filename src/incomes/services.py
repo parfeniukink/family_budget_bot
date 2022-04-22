@@ -1,6 +1,9 @@
+import calendar
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
-from typing import Optional
+from itertools import groupby
+from operator import attrgetter
+from typing import Iterable, Optional
 
 from config import database
 from equity import EquityService
@@ -11,9 +14,11 @@ from users import User, UsersService
 
 
 class IncomesService:
+    __DATE_FROAMT = "%Y-%m-%d"
+    __MONTHLY_DATE_FROAMT = "%Y-%m"
+    __TABLE = "incomes"
+
     def __init__(self, account_id: int) -> None:
-        self.__DATE_FROAMT = "%Y-%m-%d"
-        self.__TABLE = "incomes"
         self._user: Optional[User] = UsersService.fetch_user(account_id)
         self._date: Optional[date] = None
         self._name: Optional[str] = None
@@ -77,3 +82,34 @@ class IncomesService:
 
         self.save_incomes()
         return True
+
+    @classmethod
+    def get_incomes_by_currency(cls, costs: list[Income]) -> Iterable:
+        attr = "currency"
+        return groupby(sorted(costs, key=attrgetter(attr)), key=attrgetter(attr))
+
+    @classmethod
+    def get_monthly_incomes(cls, date: str) -> dict[str, list[Income]]:
+        """
+        Return the list of costs for the specific month by currency.
+        Used mostly for analytics.
+        date: str -- date in format YEAR-MONTH and
+        """
+        try:
+            datetime.strptime(date, cls.__MONTHLY_DATE_FROAMT)
+        except ValueError:
+            raise IncomesError("Invalid monthly date format")
+
+        year, month = date.split("-")
+        _, last_day = calendar.monthrange(int(year), int(month))
+
+        start_date = "-".join((date, "01"))
+        end_date = "-".join((date, str(last_day)))
+
+        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_date}' and date <= '{end_date}'"
+        data = database.raw_execute(q)
+        incomes = [Income(**item) for item in data]
+
+        results = {currency: list(incomes_iter) for currency, incomes_iter in cls.get_incomes_by_currency(incomes)}
+
+        return results

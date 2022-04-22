@@ -5,6 +5,7 @@ from configurations import configuration_error_handler
 from costs.keyboards import categories_keyboard
 from costs.services import CostsService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
+from shared.categories import CATEGORIES_EMOJI
 from shared.costs import KeyboardButtons
 from shared.errors import user_error_handler
 
@@ -21,10 +22,20 @@ def confirmation(m: types.Message, costs_service: CostsService):
 @user_error_handler
 def add_value(m: types.Message, costs_service: CostsService):
     costs_service.add_value(m.text)
+    category = costs_service._category.name if costs_service._category else ""
+    category_emoji = CATEGORIES_EMOJI.get(category, "")
+    next_step_text = "\n".join(
+        [
+            "Would you like to save this costs ❓\n",
+            f"Category 👉 {category} {category_emoji}",  # type: ignore
+            f"Description 👉 {costs_service._text}",
+            f"Value 👉 {costs_service._value}",
+        ]
+    )
     bot.send_message(
         m.chat.id,
         reply_markup=confirmation_keyboard(),
-        text=f"Value added: {m.text}\nWoud you like to save this Cost?",
+        text=next_step_text,
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,

@@ -27,20 +27,13 @@ def monthly_dispatcher(m: types.Message, month: str):
     elif m.text == AnalyticsDetailOptions.DETAILED.value:
         report = AnalitycsService.get_monthly_detailed_report(month)
 
-    if len(report) > 4000:
+    for text in report:
         bot.send_message(
             m.chat.id,
             reply_markup=default_keyboard(),
-            text="Only basic report is allowed",
+            text=text,
             **DEFAULT_SEND_SETTINGS,
         )
-
-    bot.send_message(
-        m.chat.id,
-        reply_markup=default_keyboard(),
-        text=report,
-        **DEFAULT_SEND_SETTINGS,
-    )
 
 
 @user_error_handler
@@ -73,7 +66,7 @@ def analytics_dispatcher(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=analytics_dates_keyboard(),
-        text=f"Use option {AnalyticsOptions.BY_MONTH.name}",
+        text=f"Use option {AnalyticsOptions.BY_MONTH.name}\nPlease, select date 📅",
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,

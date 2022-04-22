@@ -19,7 +19,7 @@ class IncomesService:
     __TABLE = "incomes"
 
     def __init__(self, account_id: int) -> None:
-        self._user: Optional[User] = UsersService.fetch_user(account_id)
+        self._user: Optional[User] = UsersService.fetch_by_account_id(account_id)
         self._date: Optional[date] = None
         self._name: Optional[str] = None
         self._value: Optional[Decimal] = None
@@ -106,7 +106,7 @@ class IncomesService:
         start_date = "-".join((date, "01"))
         end_date = "-".join((date, str(last_day)))
 
-        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_date}' and date <= '{end_date}'"
+        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_date}' and date <= '{end_date}' ORDER BY date ASC"
         data = database.raw_execute(q)
         incomes = [Income(**item) for item in data]
 

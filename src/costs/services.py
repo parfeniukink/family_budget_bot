@@ -50,7 +50,7 @@ class CostsService:
         self.__DATE_FROAMT = "%Y-%m-%d"
         self.__MONTHLY_DATE_FROAMT = "%Y-%m"
         self.__COSTS_TABLE = "costs"
-        self._user: Optional[User] = UsersService.fetch_user(account_id)
+        self._user: Optional[User] = UsersService.fetch_by_account_id(account_id)
         self._category: Optional[Category] = None
         self._date: Optional[date] = None
         self._text: Optional[str] = None

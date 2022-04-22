@@ -16,6 +16,7 @@ from shared.categories import CATEGORIES_EMOJI
 from shared.finances.models import Currencies, DatabaseCurrencies
 from shared.sequences import build_dict_from_sequence, without_duplicates
 from shared.strings import get_number_in_frames
+from users import User, UsersService
 
 
 class AnalyticsCache(type):
@@ -161,8 +162,47 @@ class AnalitycsService(metaclass=AnalyticsCache):
         return [message]
 
     @classmethod
+    def __get_detailed_costs(cls, categories_by_id: dict[int, Category], costs: list[Cost], header: str) -> list[str]:
+        """Return costs by category in readable format"""
+        results: list[str] = []
+        rcosts = [el for el in cls.__get_formatted_costs_by_currency_detailed(categories_by_id, costs)]
+
+        if rcosts:
+            results.append(f"<b><i>{header}</i></b>")
+            results += rcosts
+
+        return results
+
+    @classmethod
+    def __get_detailed_incomes_message(cls, cached_users: dict[int, User], incomes: list[Income]) -> str:
+        """Return costs by category in readable format"""
+        result = ""
+
+        for income in incomes:
+            user: Optional[User] = cached_users.get(income.user_id) or UsersService.fetch_by_id(income.user_id)
+
+            if not user:
+                raise AnalyticsError(f"For some reason there is not user in database related to this income {income}")
+
+            if user.account_id not in cached_users:
+                cached_users[user.account_id] = user
+
+            sign = "$" if income.currency == DatabaseCurrencies.USD.value else ""
+            fdate = income.date.strftime("%d")
+
+            result += f"{fdate}   {user.full_name} | {income.name} 👉 {income.value} {sign}\n"
+
+        return result
+
+    @classmethod
     def get_monthly_detailed_report(cls, month: str) -> Iterable[str]:
+        """
+        This is a general interface to get monthly costs and incomes analytics
+        Return the list of costs by category with headers.
+        The last element in the list is incomes
+        """
         costs: dict[str, list[Cost]] = CostsService.get_monthly_costs(month)
+        incomes: dict[str, list[Income]] = IncomesService.get_monthly_incomes(month)
         categories_by_id: dict[int, Category] = build_dict_from_sequence(
             CategoriesService.CACHED_CATEGORIES,
             "id",
@@ -170,29 +210,19 @@ class AnalitycsService(metaclass=AnalyticsCache):
 
         report = []
         report.append("<b>Analytics 📈</b>")
-
         with suppress(KeyError):
-            uah_costs = [
-                el
-                for el in cls.__get_formatted_costs_by_currency_detailed(
-                    categories_by_id, costs[DatabaseCurrencies.UAH.value]
-                )
-            ]
-
-            if uah_costs:
-                report.append(f"<b><i>{Currencies.UAH.value}</i></b>")
-                report += uah_costs
-
+            report.extend(
+                cls.__get_detailed_costs(categories_by_id, costs[DatabaseCurrencies.UAH.value], Currencies.UAH.value)
+            )
         with suppress(KeyError):
-            usd_costs = [
-                el
-                for el in cls.__get_formatted_costs_by_currency_detailed(
-                    categories_by_id, costs[DatabaseCurrencies.USD.value]
-                )
-            ]
+            report.extend(
+                cls.__get_detailed_costs(categories_by_id, costs[DatabaseCurrencies.USD.value], Currencies.USD.value)
+            )
 
-            if usd_costs:
-                report.append(f"\n\n<b><i>{Currencies.USD.value}</i></b>")
-                report += usd_costs
+        cached_users: dict[int, User] = {}
+        uah_incomes: str = cls.__get_detailed_incomes_message(cached_users, incomes[DatabaseCurrencies.UAH.value])
+        usd_incomes: str = cls.__get_detailed_incomes_message(cached_users, incomes[DatabaseCurrencies.USD.value])
+        incomes_message = "\n".join(["<b>Incomes 💸\n</b>", uah_incomes, usd_incomes])
+        report.append(incomes_message)
 
         return report

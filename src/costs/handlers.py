@@ -123,7 +123,10 @@ def add_costs(m: types.Message):
 #####################################################
 @user_error_handler
 @restart_handler
-def select_id_for_delete(m: types.Message, service: CostsService):
+def select_id_for_delete(m: types.Message, service: CostsService, allowed_ids: set):
+    if m.text not in allowed_ids:
+        raise CostsError(f"⚠️ Can not find id 👉 {m.text}\nPlease use the keyboard below!")
+
     service.delete_by_id(m.text)
     bot.send_message(m.chat.id, reply_markup=default_keyboard(), text="✅ Cost removed")
 
@@ -144,6 +147,7 @@ def select_category_for_delete(m: types.Message, service: CostsService, costs: l
         chat_id=m.chat.id,
         callback=select_id_for_delete,
         service=service,
+        allowed_ids={cost.id for cost in filtered_costs},
     )
 
 

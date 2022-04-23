@@ -105,6 +105,20 @@ def add_costs(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=categories_keyboard(),
+        text="Please, select date from the list",
+    )
+    costs_service = CostsService(account_id=m.from_user.id)
+
+    bot.register_next_step_handler_by_chat_id(chat_id=m.chat.id, callback=select_date, costs_service=costs_service)
+
+
+@bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_COST.value}")
+@user_error_handler
+@restart_handler
+def update_costs(m: types.Message):
+    bot.send_message(
+        m.chat.id,
+        reply_markup=categories_keyboard(),
         text="Please, select category from the list",
     )
     costs_service = CostsService(account_id=m.from_user.id)

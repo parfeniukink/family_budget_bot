@@ -9,7 +9,8 @@ from config import database
 from equity import EquityService
 from incomes.errors import IncomesError
 from incomes.models import Income
-from shared.finances import Currencies
+from shared.finances import Currencies, DatabaseCurrencies
+from shared.strings import get_number_in_frames
 from users import User, UsersService
 
 
@@ -82,6 +83,36 @@ class IncomesService:
 
         self.save_incomes()
         return True
+
+    @classmethod
+    def get_detailed_incomes_message(cls, cached_users: dict[int, User], incomes: list[Income]) -> str:
+        """Return costs by category in readable format"""
+        result = ""
+
+        for income in incomes:
+            user: Optional[User] = cached_users.get(income.user_id) or UsersService.fetch_by_id(income.user_id)
+
+            if not user:
+                raise IncomesError(f"For some reason there is not user in database related to this income {income}")
+
+            if user.account_id not in cached_users:
+                cached_users[user.account_id] = user
+
+            sign = "$" if income.currency == DatabaseCurrencies.USD.value else ""
+            fdate = income.date.strftime("%d")
+
+            result += f"{fdate}   {user.full_name} | {income.name} 👉 {income.value} {sign}\n"
+
+        return result
+
+    @classmethod
+    def get_formatted_incomes_by_currency_basic(cls, incomes: list[Income]) -> str:
+        total_incomes: Decimal = sum(incomes)  # type: ignore
+        try:
+            sign = "$" if incomes[0].currency == DatabaseCurrencies.USD.value else ""
+        except KeyError:
+            sign = ""
+        return f"<b>Total incomes</b> 👉 {get_number_in_frames(total_incomes)} {sign}"
 
     @classmethod
     def get_incomes_by_currency(cls, costs: list[Income]) -> Iterable:

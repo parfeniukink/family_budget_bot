@@ -81,13 +81,9 @@ class AnalitycsService(metaclass=AnalyticsCache):
         return groupby(sorted(costs, key=attrgetter(attr)), key=attrgetter(attr))
 
     @classmethod
-    def __get_formatted_costs_by_currency_basic(
-        cls, categories_by_id: dict[int, Category], costs: list[Cost], incomes: dict[str, list[Income]]
-    ) -> str:
+    def __get_formatted_costs_by_currency_basic(cls, categories_by_id: dict[int, Category], costs: list[Cost]) -> str:
         text = ""
         total_costs_sum: Decimal = sum(costs)  # type: ignore
-        total_uah_incomes: Decimal = sum(incomes[DatabaseCurrencies.UAH.value])  # type: ignore
-        total_usd_incomes: Decimal = sum(incomes[DatabaseCurrencies.USD.value])  # type: ignore
 
         for id, costs_group in cls.__costs_by_category(costs):
             category: Category = categories_by_id[id]
@@ -103,10 +99,7 @@ class AnalitycsService(metaclass=AnalyticsCache):
             [
                 "",
                 "",
-                "⬇️ ⬇️ ⬇️ ⬇️ ⬇️",
-                f"Total costs 👉 {get_number_in_frames(total_costs_sum)}",
-                f"Total UAH incomes 👉 {get_number_in_frames(total_uah_incomes)}",
-                f"Total USD incomes 👉 {get_number_in_frames(total_usd_incomes)} $",
+                f"<b>Total costs</b> 👉 {get_number_in_frames(total_costs_sum)}",
             ]
         )
 
@@ -147,54 +140,42 @@ class AnalitycsService(metaclass=AnalyticsCache):
         return results
 
     @classmethod
-    def __get_detailed_incomes_message(cls, cached_users: dict[int, User], incomes: list[Income]) -> str:
-        """Return costs by category in readable format"""
-        result = ""
+    def __get_basic_report(
+        cls, categories_by_id: dict[int, Category], costs: dict[str, list[Cost]], incomes: dict[str, list[Income]]
+    ) -> str:
+        uah_costs_message = ""
+        usd_costs_message = ""
+        uah_incomes_message = ""
+        usd_incomes_message = ""
 
-        for income in incomes:
-            user: Optional[User] = cached_users.get(income.user_id) or UsersService.fetch_by_id(income.user_id)
-
-            if not user:
-                raise AnalyticsError(f"For some reason there is not user in database related to this income {income}")
-
-            if user.account_id not in cached_users:
-                cached_users[user.account_id] = user
-
-            sign = "$" if income.currency == DatabaseCurrencies.USD.value else ""
-            fdate = income.date.strftime("%d")
-
-            result += f"{fdate}   {user.full_name} | {income.name} 👉 {income.value} {sign}\n"
-
-        return result
-
-    @classmethod
-    def get_monthly_basic_report(cls, month: str) -> Iterable[str]:
-        costs: dict[str, list[Cost]] = CostsService.get_monthly_costs(month)
-        incomes: dict[str, list[Income]] = IncomesService.get_monthly_incomes(month)
-        categories_by_id: dict[int, Category] = build_dict_from_sequence(
-            CategoriesService.CACHED_CATEGORIES,
-            "id",
-        )  # type: ignore
+        uah_title = f"\n\n<b><i>{Currencies.UAH.value}</i></b>"
+        usd_title = f"\n\n<b><i>{Currencies.USD.value}</i></b>"
 
         message = "<b>Analytics 📈\n</b>"
 
         with suppress(KeyError):
-            uah_costs = cls.__get_formatted_costs_by_currency_basic(
-                categories_by_id, costs[DatabaseCurrencies.UAH.value], incomes
+            uah_costs_message = cls.__get_formatted_costs_by_currency_basic(
+                categories_by_id, costs[DatabaseCurrencies.UAH.value]
             )
-            _uah_title = f"\n\n<b><i>{Currencies.UAH.value}</i></b>"
-            message += "".join((_uah_title, uah_costs))
-
         with suppress(KeyError):
-            usd_costs = cls.__get_formatted_costs_by_currency_basic(
-                categories_by_id, costs[DatabaseCurrencies.USD.value], incomes
+            usd_costs_message = cls.__get_formatted_costs_by_currency_basic(
+                categories_by_id, costs[DatabaseCurrencies.USD.value]
+            )
+        with suppress(KeyError):
+            uah_incomes_message = IncomesService.get_formatted_incomes_by_currency_basic(
+                incomes[DatabaseCurrencies.UAH.value]
+            )
+        with suppress(KeyError):
+            usd_incomes_message = IncomesService.get_formatted_incomes_by_currency_basic(
+                incomes[DatabaseCurrencies.USD.value]
             )
 
-            if usd_costs:
-                _uah_title = f"\n\n<b><i>{Currencies.USD.value}</i></b>"
-                message += "".join((_uah_title, usd_costs))
+        if uah_costs_message or uah_incomes_message:
+            message += "\n".join([uah_title, uah_costs_message, uah_incomes_message])
+        if usd_costs_message or usd_incomes_message:
+            message += "\n".join([usd_title, usd_costs_message, usd_incomes_message])
 
-        return [message]
+        return message
 
     @classmethod
     def get_monthly_detailed_report(cls, month: str) -> Iterable[str]:
@@ -222,12 +203,30 @@ class AnalitycsService(metaclass=AnalyticsCache):
             )
 
         cached_users: dict[int, User] = {}
-        uah_incomes: str = cls.__get_detailed_incomes_message(cached_users, incomes[DatabaseCurrencies.UAH.value])
-        usd_incomes: str = cls.__get_detailed_incomes_message(cached_users, incomes[DatabaseCurrencies.USD.value])
+        uah_incomes: str = IncomesService.get_detailed_incomes_message(
+            cached_users, incomes[DatabaseCurrencies.UAH.value]
+        )
+        usd_incomes: str = IncomesService.get_detailed_incomes_message(
+            cached_users, incomes[DatabaseCurrencies.USD.value]
+        )
+
         incomes_message = "\n".join(["<b>Incomes 💸\n</b>", uah_incomes, usd_incomes])
         report.append(incomes_message)
 
         return report
+
+    @classmethod
+    def get_monthly_basic_report(cls, month: str) -> Iterable[str]:
+        costs: dict[str, list[Cost]] = CostsService.get_monthly_costs(month)
+        incomes: dict[str, list[Income]] = IncomesService.get_monthly_incomes(month)
+        categories_by_id: dict[int, Category] = build_dict_from_sequence(
+            CategoriesService.CACHED_CATEGORIES,
+            "id",
+        )  # type: ignore
+
+        report = cls.__get_basic_report(categories_by_id, costs, incomes)
+
+        return [report]
 
     @classmethod
     def get_annyally_report(cls, year: str) -> str:
@@ -239,22 +238,6 @@ class AnalitycsService(metaclass=AnalyticsCache):
             "id",
         )  # type: ignore
 
-        message = "<b>Analytics 📈\n</b>"
+        report = cls.__get_basic_report(categories_by_id, costs, incomes)
 
-        with suppress(KeyError):
-            uah_costs = cls.__get_formatted_costs_by_currency_basic(
-                categories_by_id, costs[DatabaseCurrencies.UAH.value], incomes
-            )
-            _uah_title = f"\n\n<b><i>{Currencies.UAH.value}</i></b>"
-            message += "".join((_uah_title, uah_costs))
-
-        with suppress(KeyError):
-            usd_costs = cls.__get_formatted_costs_by_currency_basic(
-                categories_by_id, costs[DatabaseCurrencies.USD.value], incomes
-            )
-
-            if usd_costs:
-                _uah_title = f"\n\n<b><i>{Currencies.USD.value}</i></b>"
-                message += "".join((_uah_title, usd_costs))
-
-        return message
+        return report

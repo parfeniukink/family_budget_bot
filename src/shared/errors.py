@@ -27,7 +27,7 @@ def user_error_handler(func):
             bot.send_message(
                 m.chat.id,
                 reply_markup=default_keyboard(),
-                text=f"<b>Error:</b>\n\n{err}",
+                text=f"<b>⚠️ Error:</b>\n\n{err}",
                 **DEFAULT_SEND_SETTINGS,
             )
 

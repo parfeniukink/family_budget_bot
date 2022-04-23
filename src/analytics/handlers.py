@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from telebot import types
 
 from analytics.errors import AnalyticsError
@@ -37,14 +39,16 @@ def monthly_dispatcher(m: types.Message, month: str):
 
 
 @user_error_handler
-def by_date_callback(m: types.Message):
-    if not m.text:
-        raise AnalyticsError("Date is not selected")
+def by_month_callback(m: types.Message):
+    try:
+        datetime.strptime(m.text or "", "%Y-%m")
+    except ValueError:
+        raise AnalyticsError(f"Date <b>{m.text}</b> doesn't match format YEAR-MONTH")
 
     bot.send_message(
         m.chat.id,
         reply_markup=analytics_dates_detail_keyboard(),
-        text="Select detail option",
+        text="Select detail level:",
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -54,19 +58,45 @@ def by_date_callback(m: types.Message):
 
 
 @user_error_handler
+def by_year_callback(m: types.Message):
+    if not m.text:
+        raise AnalyticsError("Year is not selected")
+
+    text = AnalitycsService.get_annyally_report(m.text)
+
+    bot.send_message(
+        m.chat.id,
+        reply_markup=default_keyboard(),
+        text=text,
+        **DEFAULT_SEND_SETTINGS,
+    )
+
+
+@user_error_handler
 def analytics_dispatcher(m: types.Message):
     if m.text not in AnalyticsOptions.values():
         raise AnalyticsError()
 
     callback = None
+    keyboard = None
+    option = None
 
     if m.text == AnalyticsOptions.BY_MONTH.value:
-        callback = by_date_callback
+        option = AnalyticsOptions.BY_MONTH.value
+        callback = by_month_callback
+        keyboard = analytics_dates_keyboard()
+    elif m.text == AnalyticsOptions.BY_YEAR.value:
+        option = AnalyticsOptions.BY_YEAR.value
+        callback = by_year_callback
+        keyboard = analytics_dates_keyboard(date_format="%Y")
+
+    if not all((callback, keyboard, option)):
+        raise AnalyticsError("Keyboard or callback not found")
 
     bot.send_message(
         m.chat.id,
-        reply_markup=analytics_dates_keyboard(),
-        text=f"Use option {AnalyticsOptions.BY_MONTH.name}\nPlease, select date 📅",
+        reply_markup=keyboard,
+        text=f"Use option {option}\nNow, please, select the date 📅",
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -76,7 +106,7 @@ def analytics_dispatcher(m: types.Message):
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ANALYTICS.value}")
 @user_error_handler
-def add_costs(m: types.Message):
+def analytics(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=analytics_keyboard(),

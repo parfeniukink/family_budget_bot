@@ -6,7 +6,8 @@ from shared.collections import Enum
 
 
 class AnalyticsOptions(Enum):
-    BY_MONTH = "By month"
+    BY_MONTH = "Monthly"
+    BY_YEAR = "Annually"
 
 
 class AnalyticsDetailOptions(Enum):
@@ -25,10 +26,10 @@ def analytics_keyboard() -> types.ReplyKeyboardMarkup:
     return markup
 
 
-def analytics_dates_keyboard() -> types.ReplyKeyboardMarkup:
+def analytics_dates_keyboard(date_format: str = "%Y-%m") -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-    for date in AnalitycsService.get_formatted_dates():
+    for date in AnalitycsService.get_formatted_dates(date_format):
         markup.add(types.KeyboardButton(date))
 
     markup.add(HELP_BUTTON)

@@ -44,12 +44,13 @@ class CategoriesService(metaclass=CategoriesCache):
 class CostsService:
     __DATE_FROAMT = "%Y-%m-%d"
     __MONTHLY_DATE_FROAMT = "%Y-%m"
-    __COSTS_TABLE = "costs"
+    __ANNUALLY_DATE_FROAMT = "%Y"
+    __TABLE = "costs"
 
     def __init__(self, account_id: int) -> None:
         self.__DATE_FROAMT = "%Y-%m-%d"
         self.__MONTHLY_DATE_FROAMT = "%Y-%m"
-        self.__COSTS_TABLE = "costs"
+        self.__TABLE = "costs"
         self._user: Optional[User] = UsersService.fetch_by_account_id(account_id)
         self._category: Optional[Category] = None
         self._date: Optional[date] = None
@@ -103,7 +104,7 @@ class CostsService:
             "user_id": self._user.id,
             "category_id": self._category.id,
         }
-        data: dict = database.insert(self.__COSTS_TABLE, payload)
+        data: dict = database.insert(self.__TABLE, payload)
         costs = Cost(**data)
 
         EquityService.update(costs)
@@ -140,7 +141,26 @@ class CostsService:
         start_date = "-".join((date, "01"))
         end_date = "-".join((date, str(last_day)))
 
-        q = f"SELECT * from {cls.__COSTS_TABLE} WHERE date >='{start_date}' and date <= '{end_date}' ORDER BY date ASC"
+        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_date}' and date <= '{end_date}' ORDER BY date ASC"
+        data = database.raw_execute(q)
+        costs = [Cost(**item) for item in data]
+
+        return {currency: list(costs_iter) for currency, costs_iter in cls.get_costs_by_currency(costs)}
+
+    @classmethod
+    def get_annually_costs(cls, year: str) -> dict[str, list[Cost]]:
+        """
+        Return the list of costs for the specific year by currency.
+        Used mostly for analytics.
+        """
+        try:
+            year_num = int(year)
+        except ValueError:
+            raise CostsError("Invalid year. Year should be a number")
+
+        start_year = f"{year_num}-01-01"
+        end_year = f"{year_num + 1}-01-01"
+        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_year}' and date < '{end_year}' ORDER BY date ASC"
         data = database.raw_execute(q)
         costs = [Cost(**item) for item in data]
 

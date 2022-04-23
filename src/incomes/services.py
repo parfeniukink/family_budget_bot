@@ -113,3 +113,22 @@ class IncomesService:
         results = {currency: list(incomes_iter) for currency, incomes_iter in cls.get_incomes_by_currency(incomes)}
 
         return results
+
+    @classmethod
+    def get_annually_incomes(cls, year: str) -> dict[str, list[Income]]:
+        """
+        Return the list of incomes for the specific year by currency.
+        Used mostly for analytics.
+        """
+        try:
+            year_num = int(year)
+        except ValueError:
+            raise IncomesError("Invalid year. Year should be a number")
+
+        start_year = f"{year_num}-01-01"
+        end_year = f"{year_num + 1}-01-01"
+        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_year}' and date < '{end_year}' ORDER BY date ASC"
+        data = database.raw_execute(q)
+        incomes = [Income(**item) for item in data]
+
+        return {currency: list(incomes_iter) for currency, incomes_iter in cls.get_incomes_by_currency(incomes)}

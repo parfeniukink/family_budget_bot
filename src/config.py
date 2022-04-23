@@ -26,7 +26,8 @@ TELEGRAM_MESSAGE_MAX_LEN = 4096
 
 DEFAULT_SEND_SETTINGS = {"disable_web_page_preview": True, "parse_mode": "HTML"}
 
-HELP_BUTTON = types.KeyboardButton("/restart")
+HELP_TEXT = "/restart"
+HELP_BUTTON = types.KeyboardButton(HELP_TEXT)
 
 DATES_KEYBOARD_LEN: int = int(getenv("DATES_KEYBOARD_LEN", default=10))
 

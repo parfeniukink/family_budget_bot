@@ -18,7 +18,7 @@ def restart_handler(func):
             bot.send_message(
                 m.chat.id,
                 reply_markup=default_keyboard(),
-                text="⚠️ Aboarted",
+                text="⚠️ Aborted",
             )
         else:
             return func(m, *args, **kwargs)

@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from itertools import groupby
 from operator import attrgetter
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 
 from config import database
 from configurations import ConfigurationsService
@@ -40,6 +40,13 @@ class CategoriesService(metaclass=CategoriesCache):
                 return category
         return None
 
+    @classmethod
+    def get_by_id(cls, id: int) -> Optional[Category]:
+        for category in cls.CACHED_CATEGORIES:
+            if category.id == id:
+                return category
+        return None
+
 
 class CostsService:
     __DATE_FROAMT = "%Y-%m-%d"
@@ -57,7 +64,7 @@ class CostsService:
         self._text: Optional[str] = None
         self._value: Optional[Decimal] = None
 
-    def set_category(self, text: str = None) -> None:
+    def set_category(self, text: Optional[str] = None) -> None:
         if text is None:
             raise CostsError("Category is not selected")
 
@@ -66,7 +73,7 @@ class CostsService:
 
         self._category = CategoriesService.get_by_name(text)
 
-    def set_date(self, text: str = None) -> None:
+    def set_date(self, text: Optional[str] = None) -> None:
         if text is None:
             raise CostsError("Date is not selected")
 
@@ -75,13 +82,13 @@ class CostsService:
         except ValueError:
             raise CostsError("Invalid date")
 
-    def add_text(self, text: str = None) -> None:
+    def add_text(self, text: Optional[str] = None) -> None:
         if text is None:
             raise CostsError("Text is not added")
 
         self._text = text
 
-    def add_value(self, text: str = None) -> None:
+    def add_value(self, text: Optional[str] = None) -> None:
         if text is None:
             raise CostsError("Value is not added")
 
@@ -117,6 +124,22 @@ class CostsService:
 
         self.save_costs()
         return True
+
+    @classmethod
+    def get_formatted_cost(cls, cost: Cost) -> str:
+        category: Optional[Category] = CategoriesService.get_by_id(cost.category_id)
+        user = UsersService.fetch_by_id(cost.user_id)
+
+        if not user:
+            raise CostsError("⚠️ For some reason cost {cost.id} doesn't have user")
+        if not category:
+            raise CostsError("⚠️ For some reason cost {cost.id} doesn't have category")
+
+        return f"{cost.id}  {category.name}  {cost.name} 👉 {cost.value}  by {user.full_name}"
+
+    @classmethod
+    def get_formatted_costs_for_delete(cls, costs: list[Cost]) -> str:
+        return "\n".join(cls.get_formatted_cost(cost) for cost in costs)
 
     @classmethod
     def get_costs_by_currency(cls, costs: list[Cost]) -> Iterable:
@@ -165,3 +188,12 @@ class CostsService:
         costs = [Cost(**item) for item in data]
 
         return {currency: list(costs_iter) for currency, costs_iter in cls.get_costs_by_currency(costs)}
+
+    @classmethod
+    def delete_by_id(cls, id: Any) -> None:
+        try:
+            int(id)
+        except ValueError:
+            raise CostsError("⚠️ Invalid id value. It should be a number")
+
+        database.delete(cls.__TABLE, "id", id)

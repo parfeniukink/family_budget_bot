@@ -38,3 +38,6 @@ class Database(Protocol):
 
     def update(self, table: str, data: tuple[str, Any], condition: tuple[str, Any]) -> dict:
         ...
+
+    def delete(self, table: str, column: str, value: str) -> dict:
+        ...

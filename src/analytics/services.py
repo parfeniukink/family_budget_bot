@@ -1,12 +1,9 @@
 from contextlib import suppress
-from datetime import date, timedelta
 from decimal import Decimal
 from itertools import groupby
 from operator import attrgetter
-from typing import Iterable, Optional
+from typing import Iterable
 
-from analytics.errors import AnalyticsError
-from config import database
 from costs import Cost
 from costs.models import Category
 from costs.services import CategoriesService, CostsService
@@ -14,67 +11,12 @@ from incomes.models import Income
 from incomes.services import IncomesService
 from shared.categories import CATEGORIES_EMOJI
 from shared.finances.models import Currencies, DatabaseCurrencies
-from shared.sequences import build_dict_from_sequence, without_duplicates
+from shared.sequences import build_dict_from_sequence
 from shared.strings import get_number_in_frames
-from users import User, UsersService
+from users import User
 
 
-class AnalyticsCache(type):
-    COSTS_TABLE = "costs"
-
-    @classmethod
-    def get_dates(cls) -> Optional[tuple[date, date]]:
-        first_date = database.raw_execute(f"SELECT date from {cls.COSTS_TABLE} ORDER BY date ASC LIMIT 1")[0]["date"]
-        last_date = database.raw_execute(f"SELECT date from {cls.COSTS_TABLE} ORDER BY date DESC LIMIT 1")[0]["date"]
-        try:
-            return first_date, last_date
-        except IndexError:
-            return None
-
-    def __getattr__(cls, attr):
-        if attr == "FIRST_DATE" or attr == "LAST_DATE":
-            dates = cls.get_dates()
-
-            if not dates:
-                return None
-
-            first_date = dates[0]
-            last_date = dates[1]
-
-            setattr(cls, "FIRST_DATE", first_date)
-            setattr(cls, "LAST_DATE", last_date)
-
-            if attr == "FIRST_DATE":
-                return first_date
-
-            if attr == "LAST_DATE":
-                return last_date
-
-        raise AttributeError(attr)
-
-
-class AnalitycsService(metaclass=AnalyticsCache):
-    FIRST_DATE: Optional[date]
-    DATE_FORMAT = "%Y-%m"
-
-    @classmethod
-    def get_formatted_dates(cls, date_format: str = "%Y-%m") -> Iterable:
-        """Return the list of dates from the first saved cost to today in format YEAR-MONTH"""
-        if not cls.FIRST_DATE or not cls.LAST_DATE:
-            raise AnalyticsError("Currently we do not have any costs in database")
-
-        if all([cls.FIRST_DATE.year == cls.LAST_DATE.year, cls.FIRST_DATE.month == cls.LAST_DATE.month]):
-            return list(cls.FIRST_DATE.strftime(date_format))
-
-        data = [
-            (cls.FIRST_DATE + timedelta(_)).strftime(date_format)
-            for _ in range(
-                (cls.LAST_DATE - cls.FIRST_DATE).days,
-            )
-        ]
-
-        return without_duplicates(reversed(data))
-
+class AnalitycsService:
     @classmethod
     def __costs_by_category(cls, costs: list[Cost]):
         attr = "category_id"

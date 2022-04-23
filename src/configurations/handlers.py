@@ -12,9 +12,11 @@ from keyboards import default_keyboard
 from shared.configurations.constants import Configurations
 from shared.configurations.keyboards import KeyboardButtons
 from shared.errors import user_error_handler
+from shared.handlers import restart_handler
 
 
 @user_error_handler
+@restart_handler
 def update_configuration(m: types.Message, name: str):
     configuration = ConfigurationsService.update(data=(name, m.text))
     bot.send_message(
@@ -25,6 +27,7 @@ def update_configuration(m: types.Message, name: str):
 
 
 @user_error_handler
+@restart_handler
 def select_configuration(m: types.Message):
     if m.text not in Configurations.values():
         raise ConfigurationError("Invalid configuration selected")
@@ -37,6 +40,7 @@ def select_configuration(m: types.Message):
 
 
 @user_error_handler
+@restart_handler
 def select_action(m: types.Message):
     if m.text not in ConfigurationMenu.values():
         raise ConfigurationError("Invalid action")
@@ -61,6 +65,7 @@ def select_action(m: types.Message):
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.CONFIGURATIONS.value}")
 @user_error_handler
+@restart_handler
 def configurations(m: types.Message):
     bot.send_message(
         m.chat.id,

@@ -113,3 +113,15 @@ class Postgres:
         result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
 
         return result
+
+    def delete(self, table: str, column: str, value: str) -> dict:
+        value = value if value.isdigit() else f"'{value}'"
+        q = f"DELETE from {table} WHERE {column}={value} RETURNING *"
+
+        with self.cursor() as cursor:
+            cursor.execute(q)
+            execution_result = cursor.fetchone()
+
+        result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
+
+        return result

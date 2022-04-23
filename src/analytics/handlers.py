@@ -7,17 +7,19 @@ from analytics.keyboards import (
     AnalyticsDetailOptions,
     AnalyticsOptions,
     analytics_dates_detail_keyboard,
-    analytics_dates_keyboard,
     analytics_keyboard,
 )
 from analytics.services import AnalitycsService
 from config import DEFAULT_SEND_SETTINGS, bot
 from keyboards import default_keyboard
 from shared.analytics import KeyboardButtons
+from shared.dates import exist_dates_keyboard
 from shared.errors import user_error_handler
+from shared.handlers import restart_handler
 
 
 @user_error_handler
+@restart_handler
 def monthly_dispatcher(m: types.Message, month: str):
     if m.text not in AnalyticsDetailOptions.values():
         raise AnalyticsError()
@@ -39,6 +41,7 @@ def monthly_dispatcher(m: types.Message, month: str):
 
 
 @user_error_handler
+@restart_handler
 def by_month_callback(m: types.Message):
     try:
         datetime.strptime(m.text or "", "%Y-%m")
@@ -58,6 +61,7 @@ def by_month_callback(m: types.Message):
 
 
 @user_error_handler
+@restart_handler
 def by_year_callback(m: types.Message):
     if not m.text:
         raise AnalyticsError("Year is not selected")
@@ -73,6 +77,7 @@ def by_year_callback(m: types.Message):
 
 
 @user_error_handler
+@restart_handler
 def analytics_dispatcher(m: types.Message):
     if m.text not in AnalyticsOptions.values():
         raise AnalyticsError()
@@ -84,11 +89,11 @@ def analytics_dispatcher(m: types.Message):
     if m.text == AnalyticsOptions.BY_MONTH.value:
         option = AnalyticsOptions.BY_MONTH.value
         callback = by_month_callback
-        keyboard = analytics_dates_keyboard()
+        keyboard = exist_dates_keyboard()
     elif m.text == AnalyticsOptions.BY_YEAR.value:
         option = AnalyticsOptions.BY_YEAR.value
         callback = by_year_callback
-        keyboard = analytics_dates_keyboard(date_format="%Y")
+        keyboard = exist_dates_keyboard(date_format="%Y")
 
     if not all((callback, keyboard, option)):
         raise AnalyticsError("Keyboard or callback not found")
@@ -106,6 +111,7 @@ def analytics_dispatcher(m: types.Message):
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ANALYTICS.value}")
 @user_error_handler
+@restart_handler
 def analytics(m: types.Message):
     bot.send_message(
         m.chat.id,

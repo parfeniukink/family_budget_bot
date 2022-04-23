@@ -7,10 +7,12 @@ from incomes.services import IncomesService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.errors import user_error_handler
 from shared.finances.models import Currencies
+from shared.handlers import restart_handler
 from shared.incomes import KeyboardButtons
 
 
 @user_error_handler
+@restart_handler
 def confirmation(m: types.Message, service: IncomesService):
     processed: bool = service.process_confirmation(m.text)
     message = "Incomes saved" if processed else "Incomes wasn't added"
@@ -19,6 +21,7 @@ def confirmation(m: types.Message, service: IncomesService):
 
 
 @user_error_handler
+@restart_handler
 def set_currency(m: types.Message, service: IncomesService):
     service.set_currency(m.text)
     date = service._date.strftime("%m-%d") if service._date else ""
@@ -48,6 +51,7 @@ def set_currency(m: types.Message, service: IncomesService):
 
 
 @user_error_handler
+@restart_handler
 def set_value(m: types.Message, service: IncomesService):
     service.set_value(m.text)
     bot.send_message(
@@ -63,6 +67,7 @@ def set_value(m: types.Message, service: IncomesService):
 
 
 @user_error_handler
+@restart_handler
 def set_name(m: types.Message, service: IncomesService):
     service.set_name(m.text)
     bot.send_message(
@@ -77,6 +82,7 @@ def set_name(m: types.Message, service: IncomesService):
 
 
 @user_error_handler
+@restart_handler
 def set_date(m: types.Message, service: IncomesService):
     service.set_date(m.text)
     bot.send_message(
@@ -93,6 +99,7 @@ def set_date(m: types.Message, service: IncomesService):
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_INCOME.value}")
 @user_error_handler
+@restart_handler
 def add_incomes(m: types.Message):
     bot.send_message(
         m.chat.id,

@@ -95,7 +95,7 @@ def select_category(m: types.Message, costs_service: CostsService):
     bot.send_message(
         m.chat.id,
         reply_markup=dates_keyboard(),
-        text=f"✅ Category 👉 {m.text} selected\nNow, please, select the date from the list",
+        text=f"✅ Category 👉 {m.text} selected\nNow, please, select the date 📅 from the list",
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,

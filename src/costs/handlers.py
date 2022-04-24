@@ -111,7 +111,7 @@ def add_costs(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=categories_keyboard(),
-        text="Please, select date from the list",
+        text="Please, select category from the list",
     )
     costs_service = CostsService(account_id=m.from_user.id)
 

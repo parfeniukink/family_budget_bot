@@ -161,5 +161,3 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 <img width="1359" alt="image" src="https://user-images.githubusercontent.com/45270625/164975112-3b616db1-8489-47b7-b47e-6e6562f8542f.png">
 
 
-
-2.2. Add a new job for copying dump from the server every **5** hours on MacOS to iCloud folder

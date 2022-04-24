@@ -36,4 +36,3 @@ def help(m: types.Message):
         text=messages.HELP_TEXT,
         **DEFAULT_SEND_SETTINGS,
     )
-

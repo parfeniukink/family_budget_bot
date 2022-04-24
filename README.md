@@ -146,3 +146,20 @@ Ingest data into database
 ```bash
 docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ```
+
+## Images
+#### Start the bot
+<img width="1382" alt="image" src="https://user-images.githubusercontent.com/45270625/164975013-ed323070-ae0f-464f-8b45-22bb4960ca5e.png">
+
+#### Monthly analytics
+<img width="1382" alt="image" src="https://user-images.githubusercontent.com/45270625/164975082-bba2ee53-877a-44d7-b6e8-6cefbb84ac42.png">
+
+#### Adding costs process
+<img width="1359" alt="image" src="https://user-images.githubusercontent.com/45270625/164975104-f7ebf517-7a78-4979-8b57-461b0d7e735f.png">
+
+#### Equity
+<img width="1359" alt="image" src="https://user-images.githubusercontent.com/45270625/164975112-3b616db1-8489-47b7-b47e-6e6562f8542f.png">
+
+
+
+2.2. Add a new job for copying dump from the server every **5** hours on MacOS to iCloud folder

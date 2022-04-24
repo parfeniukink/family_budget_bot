@@ -26,6 +26,9 @@ data/
 # Mac
 .DS_Store
 
+# Databases dumps
+dump.sql
+
 # Sqlite
 *.sqlite3
 

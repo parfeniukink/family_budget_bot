@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS incomes(
     name VARCHAR(255) NOT NULL,
     value NUMERIC NOT NULL,
     currency VARCHAR(3) NOT NULL,
+    salary BOOLEAN DEFAULT false,
     date DATE NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id)

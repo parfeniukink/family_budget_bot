@@ -1,7 +1,6 @@
 from telebot import types
 
 from config import DEFAULT_SEND_SETTINGS, bot
-from configurations import configuration_error_handler
 from costs.errors import CostsError
 from costs.keyboards import categories_keyboard, ids_keyboard
 from costs.models import Cost
@@ -18,7 +17,6 @@ from shared.handlers import restart_handler
 # Add costs
 #####################################################
 @user_error_handler
-@configuration_error_handler
 @restart_handler
 def confirmation(m: types.Message, costs_service: CostsService):
     processed: bool = costs_service.process_confirmation(m.text)

@@ -2,7 +2,11 @@ from telebot import types
 
 from config import bot
 from incomes.errors import IncomesError
-from incomes.keyboards import currencies_keyboard, salary_keyboard
+from incomes.keyboards import (
+    currencies_keyboard,
+    income_sources_keyboard,
+    salary_keyboard,
+)
 from incomes.services import IncomesService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.errors import user_error_handler
@@ -91,6 +95,7 @@ def set_name(m: types.Message, service: IncomesService):
     service.set_name(m.text)
     bot.send_message(
         m.chat.id,
+        reply_markup=types.ReplyKeyboardRemove(),
         text=f"✅ Name added 👉 {m.text}\nNow, please, enter the value:",
     )
     bot.register_next_step_handler_by_chat_id(
@@ -106,7 +111,7 @@ def set_date(m: types.Message, service: IncomesService):
     service.set_date(m.text)
     bot.send_message(
         m.chat.id,
-        reply_markup=types.ReplyKeyboardRemove(),
+        reply_markup=income_sources_keyboard(),
         text=f"✅Date added 👉 {m.text}\nNow, please, enter the name:",
     )
     bot.register_next_step_handler_by_chat_id(

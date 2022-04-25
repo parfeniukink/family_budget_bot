@@ -34,18 +34,32 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
 
     @classmethod
     def get_all_formatted(cls) -> str:
-        configurations = "\n".join([f"{c.key}: {c.value}" for c in cls.CACHED_CONFIGURATIONS])
-        return f"Active configuratoins:\n\n{configurations}"
+        configurations = "\n".join([f"{c.key} 👉 {c.value}" for c in cls.CACHED_CONFIGURATIONS])
+        return f"⚙️ <b>Active configuratoins</b>\n\n{configurations}"
 
     @classmethod
     def data_is_valid(cls, data: tuple[str, Optional[str]]) -> None:
         if len(data) != 2:
             raise ConfigurationError("Invalid configuratoin update payload")
+        if not data[1]:
+            raise ConfigurationError("Configuration value is not set")
         if data[0] not in Configurations.values():
             raise ConfigurationError("Invalid configuratoin selected")
-
         if data[0] == Configurations.DEFAULT_CURRENCY.value and data[1] not in DefaultCurrencies.values():
-            raise ConfigurationError("Invalid currency")
+            raise ConfigurationError(f"Invalid currency. Allowed: {DefaultCurrencies.values()}")
+        if data[0] == Configurations.INCOME_SOURCES.value and ", " in data[1]:
+            text = "\n".join(
+                (
+                    "Invalid format. All configurations should match match next pattern:",
+                    "<code>value,value,value</code>",
+                    "",
+                    "Spaces not allowed between values. Use only comma.",
+                    "",
+                    "Example:",
+                    "<b>My new job,Design</b>",
+                )
+            )
+            raise ConfigurationError(text)
 
     @classmethod
     def update(cls, data: tuple[str, Optional[str]]) -> Configuration:

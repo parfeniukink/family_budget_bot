@@ -8,7 +8,7 @@ from typing import Iterable, Optional
 from config import database
 from equity import EquityService
 from incomes.errors import IncomesError
-from incomes.models import Income
+from incomes.models import Income, SalaryAnswers
 from shared.finances import Currencies, DatabaseCurrencies
 from shared.strings import get_number_in_frames
 from users import User, UsersService
@@ -25,6 +25,18 @@ class IncomesService:
         self._name: Optional[str] = None
         self._value: Optional[Decimal] = None
         self._currency: Optional[str] = None
+        self._salary: Optional[bool] = None
+
+    def set_salary(self, text: str = None) -> None:
+        if text is None:
+            raise IncomesError("Income type option is not selected")
+        if text not in SalaryAnswers.values():
+            raise IncomesError("Invalid income option. Please use the keyboard")
+
+        if text == SalaryAnswers.SALARY.value:
+            self._salary = True
+        elif text == SalaryAnswers.NOT_SALARY.value:
+            self._salary = False
 
     def set_name(self, text: str = None) -> None:
         if text is None:
@@ -67,6 +79,7 @@ class IncomesService:
             "name": self._name,
             "value": self._value,
             "currency": self._currency,
+            "salary": self._salary,
             "date": self._date,
             "user_id": self._user.id,
         }
@@ -106,13 +119,18 @@ class IncomesService:
         return result
 
     @classmethod
-    def get_formatted_incomes_by_currency_basic(cls, incomes: list[Income]) -> str:
+    def get_formatted_incomes(cls, incomes: list[Income], title="Total incomes") -> str:
+        if not incomes:
+            return ""
+
         total_incomes: Decimal = sum(incomes)  # type: ignore
+
         try:
             sign = "$" if incomes[0].currency == DatabaseCurrencies.USD.value else ""
         except KeyError:
             sign = ""
-        return f"<b>Total incomes</b> 👉 {get_number_in_frames(total_incomes)} {sign}"
+
+        return f"<b>{title}</b> 👉 {get_number_in_frames(total_incomes)} {sign}"
 
     @classmethod
     def get_incomes_by_currency(cls, costs: list[Income]) -> Iterable:

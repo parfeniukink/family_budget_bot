@@ -87,8 +87,10 @@ class AnalitycsService:
     ) -> str:
         uah_costs_message = ""
         usd_costs_message = ""
-        uah_incomes_message = ""
-        usd_incomes_message = ""
+        uah_salary_incomes_message = ""
+        usd_salary_incomes_message = ""
+        uah_other_incomes_message = ""
+        usd_other_incomes_message = ""
 
         uah_title = f"\n\n<b><i>{Currencies.UAH.value}</i></b>"
         usd_title = f"\n\n<b><i>{Currencies.USD.value}</i></b>"
@@ -104,18 +106,27 @@ class AnalitycsService:
                 categories_by_id, costs[DatabaseCurrencies.USD.value]
             )
         with suppress(KeyError):
-            uah_incomes_message = IncomesService.get_formatted_incomes_by_currency_basic(
-                incomes[DatabaseCurrencies.UAH.value]
+            uah_salary_incomes_message = IncomesService.get_formatted_incomes(
+                [i for i in incomes[DatabaseCurrencies.UAH.value] if i.salary], "Salary"
             )
         with suppress(KeyError):
-            usd_incomes_message = IncomesService.get_formatted_incomes_by_currency_basic(
-                incomes[DatabaseCurrencies.USD.value]
+            usd_salary_incomes_message = IncomesService.get_formatted_incomes(
+                [i for i in incomes[DatabaseCurrencies.USD.value] if i.salary], "Salary"
+            )
+        with suppress(KeyError):
+            uah_other_incomes_message = IncomesService.get_formatted_incomes(
+                [i for i in incomes[DatabaseCurrencies.UAH.value] if not i.salary], "Other incomes"
+            )
+        with suppress(KeyError):
+            usd_other_incomes_message = IncomesService.get_formatted_incomes(
+                [i for i in incomes[DatabaseCurrencies.USD.value] if not i.salary], "Other incomes"
             )
 
-        if uah_costs_message or uah_incomes_message:
-            message += "\n".join([uah_title, uah_costs_message, uah_incomes_message])
-        if usd_costs_message or usd_incomes_message:
-            message += "\n".join([usd_title, usd_costs_message, usd_incomes_message])
+        if uah_costs_message or uah_salary_incomes_message:
+            message += "\n".join([uah_title, uah_costs_message, uah_salary_incomes_message, uah_other_incomes_message])
+
+        if usd_costs_message or usd_salary_incomes_message:
+            message += "\n".join([usd_title, usd_costs_message, usd_salary_incomes_message, usd_other_incomes_message])
 
         return message
 

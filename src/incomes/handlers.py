@@ -2,7 +2,7 @@ from telebot import types
 
 from config import bot
 from incomes.errors import IncomesError
-from incomes.keyboards import currencies_keyboard
+from incomes.keyboards import currencies_keyboard, salary_keyboard
 from incomes.services import IncomesService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.errors import user_error_handler
@@ -22,14 +22,12 @@ def confirmation(m: types.Message, service: IncomesService):
 
 @user_error_handler
 @restart_handler
-def set_currency(m: types.Message, service: IncomesService):
-    service.set_currency(m.text)
+def set_salary(m: types.Message, service: IncomesService):
+    service.set_salary(m.text)
     date = service._date.strftime("%m-%d") if service._date else ""
 
-    if not service._currency:
-        raise IncomesError("Unknown currency")
-
-    currency = getattr(Currencies, service._currency.upper(), Currencies.UAH)
+    if service._salary is None:
+        raise IncomesError("Unknown income option")
 
     next_step_text = "\n".join(
         [
@@ -37,7 +35,8 @@ def set_currency(m: types.Message, service: IncomesService):
             f"Date 👉 {date}",  # type: ignore
             f"Description 👉 {service._name}",
             f"Value 👉 {service._value}",
-            f"Currency 👉 {currency.value}",
+            f"Currency 👉 {service._currency}",
+            f"{m.text}",
         ]
     )
 
@@ -46,6 +45,26 @@ def set_currency(m: types.Message, service: IncomesService):
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
         callback=confirmation,
+        service=service,
+    )
+
+
+@user_error_handler
+@restart_handler
+def set_currency(m: types.Message, service: IncomesService):
+    service.set_currency(m.text)
+
+    if not service._currency:
+        raise IncomesError("Unknown currency")
+
+    currency = getattr(Currencies, service._currency.upper(), Currencies.UAH)
+    next_step_text = "\n".join([f"Currency 👉 {currency.value}", "Is it salary?"])
+
+    bot.send_message(m.chat.id, text=next_step_text, reply_markup=salary_keyboard())
+
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=set_salary,
         service=service,
     )
 

@@ -3,7 +3,12 @@ from decimal import Decimal
 from typing import Union
 
 from incomes.errors import IncomesError
-from shared.collections import Model
+from shared.collections import Enum, Model
+
+
+class SalaryAnswers(Enum):
+    SALARY = "✅ Salary"
+    NOT_SALARY = "❌ Not salary"
 
 
 class Income(Model):
@@ -11,6 +16,7 @@ class Income(Model):
     name: str
     value: Decimal
     currency: str
+    salary: bool
     date: date
     user_id: int
 

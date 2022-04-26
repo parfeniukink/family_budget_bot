@@ -157,6 +157,9 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 #### Adding costs process
 <img width="1359" alt="image" src="https://user-images.githubusercontent.com/45270625/164975104-f7ebf517-7a78-4979-8b57-461b0d7e735f.png">
 
+#### Removing costs process
+<img width="1364" alt="image" src="https://user-images.githubusercontent.com/45270625/165389186-501120d3-7ea1-4ade-93c2-9c4abbf06f1b.png">
+
 #### Equity
 <img width="1362" alt="image" src="https://user-images.githubusercontent.com/45270625/165388913-ed52bffb-3d94-4f69-a93b-cfbd97b32c25.png">
 

@@ -164,5 +164,5 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 <img width="1362" alt="image" src="https://user-images.githubusercontent.com/45270625/165388913-ed52bffb-3d94-4f69-a93b-cfbd97b32c25.png">
 
 #### Flexible configurations
-<img width="1372" alt="image" src="https://user-images.githubusercontent.com/45270625/165387828-31f439de-f88b-47fa-97ff-f1275c879d59.png">
+<img width="1146" alt="image" src="https://user-images.githubusercontent.com/45270625/165398121-a9191fad-9946-4467-97af-61cf62ee8bcd.png">
 

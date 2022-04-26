@@ -18,7 +18,7 @@ RUN pip install --upgrade pip \
     && pip install poetry
 
 RUN poetry config virtualenvs.create false \
-    && poetry install
+    && poetry install --no-dev
 
 COPY . .
 

@@ -10,6 +10,8 @@ from configurations import ConfigurationsService
 from costs.errors import CostsError
 from costs.models import Category, Cost
 from equity.services import EquityService
+from shared.finances import DatabaseCurrencies
+from shared.strings import get_number_in_frames
 from users.models import User
 from users.services import UsersService
 
@@ -135,7 +137,13 @@ class CostsService:
         if not category:
             raise CostsError("⚠️ For some reason cost {cost.id} doesn't have category")
 
-        return f"{cost.id}  {category.name}  {cost.name} 👉 {cost.value}  by {user.full_name}"
+        currency_sign = "$" if cost.currency == DatabaseCurrencies.USD.value else ""
+        cost_date = cost.date.strftime("%d-%m")
+
+        return (
+            f"{cost.id}  {cost.name} 👉 {get_number_in_frames(cost.value)}{currency_sign}   <i>({cost_date})</i>  "
+            f"by {user.full_name} "
+        )
 
     @classmethod
     def get_formatted_costs_for_delete(cls, costs: list[Cost]) -> str:

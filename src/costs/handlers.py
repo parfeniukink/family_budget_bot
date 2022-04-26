@@ -11,6 +11,7 @@ from shared.categories import CATEGORIES_EMOJI
 from shared.costs import KeyboardButtons
 from shared.dates import exist_dates_keyboard
 from shared.handlers import restart_handler, user_error_handler
+from shared.strings import get_number_in_frames
 
 __all__ = ("add_costs", "delete_costs")
 
@@ -40,7 +41,7 @@ def add_value(m: types.Message, costs_service: CostsService):
             f"Date 👉 {date}",  # type: ignore
             f"Category 👉 {category} {category_emoji}",  # type: ignore
             f"Description 👉 {costs_service._text}",
-            f"Value 👉 {costs_service._value}",
+            f"Value 👉 {get_number_in_frames(costs_service._value)}",
         ]
     )
     bot.send_message(
@@ -137,19 +138,27 @@ def select_id_for_delete(m: types.Message, service: CostsService, allowed_ids: s
 def select_category_for_delete(m: types.Message, service: CostsService, costs: list[Cost]):
     service.set_category(m.text)
     filtered_costs = [cost for cost in costs if cost.category_id == service._category.id]  # type: ignore
-    f_costs = service.get_formatted_costs_for_delete(filtered_costs)
+    if not filtered_costs:
+        bot.send_message(
+            m.chat.id,
+            reply_markup=default_keyboard(),
+            text=f"✅ No costs in {m.text} category",
+        )
+    else:
+        f_costs = service.get_formatted_costs_for_delete(filtered_costs)
 
-    bot.send_message(
-        m.chat.id,
-        reply_markup=ids_keyboard(reversed(filtered_costs)),
-        text=f"✅ Category selected 👉 {m.text}\nNow, please, select the id to delete\n{f_costs}",
-    )
-    bot.register_next_step_handler_by_chat_id(
-        chat_id=m.chat.id,
-        callback=select_id_for_delete,
-        service=service,
-        allowed_ids={cost.id for cost in filtered_costs},
-    )
+        bot.send_message(
+            m.chat.id,
+            reply_markup=ids_keyboard(reversed(filtered_costs)),
+            text=f"✅ Category selected 👉 {m.text}\nNow, please, select the id to delete\n\n{f_costs}",
+            **DEFAULT_SEND_SETTINGS,
+        )
+        bot.register_next_step_handler_by_chat_id(
+            chat_id=m.chat.id,
+            callback=select_id_for_delete,
+            service=service,
+            allowed_ids={cost.id for cost in filtered_costs},
+        )
 
 
 @user_error_handler

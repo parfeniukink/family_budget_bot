@@ -63,7 +63,7 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
                 )
             )
             raise ConfigurationError(text)
-        if data[0] == Configurations.ADD_COSTS_DATES_AMOUNT.value:
+        if data[0] == Configurations.KEYBOARD_DATES_AMOUNT.value:
             try:
                 int(data[1])
             except ValueError:

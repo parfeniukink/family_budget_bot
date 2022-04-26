@@ -1,6 +1,6 @@
 from telebot import types
 
-from config import HELP_BUTTON
+from keyboards import add_restart_button
 from shared.collections import Enum
 
 
@@ -14,23 +14,21 @@ class AnalyticsDetailOptions(Enum):
     DETAILED = "Detailed"
 
 
+@add_restart_button
 def analytics_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     for choise in AnalyticsOptions.values():
         markup.add(types.KeyboardButton(choise))
 
-    markup.add(HELP_BUTTON)
-
     return markup
 
 
+@add_restart_button
 def analytics_dates_detail_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     for choise in AnalyticsDetailOptions.values():
         markup.add(types.KeyboardButton(choise))
-
-    markup.add(HELP_BUTTON)
 
     return markup

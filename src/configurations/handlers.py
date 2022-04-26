@@ -10,10 +10,9 @@ from configurations.keyboards import (
 )
 from configurations.services import ConfigurationsService
 from keyboards import default_keyboard
-from shared.configurations.constants import Configurations
+from shared.configurations import Configurations
 from shared.configurations.keyboards import KeyboardButtons
-from shared.errors import user_error_handler
-from shared.handlers import restart_handler
+from shared.handlers import restart_handler, user_error_handler
 
 __all__ = ("configurations",)
 
@@ -25,7 +24,10 @@ def update_configuration(m: types.Message, name: str):
     bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),
-        text=f"Configuration updated {configuration.key}: {configuration.value}",
+        text=(
+            "✅ Configuration updated "
+            f"{getattr(Configurations, configuration.key.upper()).value} 👉 {configuration.value}"
+        ),
         **DEFAULT_SEND_SETTINGS,
     )
 
@@ -38,22 +40,26 @@ def select_configuration(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=types.ReplyKeyboardRemove(),
-        text="Enter new value for configuration",
+        text="Enter new value for configuration ⬇️",
         **DEFAULT_SEND_SETTINGS,
     )
-    bot.register_next_step_handler_by_chat_id(chat_id=m.chat.id, callback=update_configuration, name=m.text)
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=update_configuration,
+        name=m.text,
+    )
 
 
 @user_error_handler
 @restart_handler
 def select_action(m: types.Message):
     if m.text not in ConfigurationMenu.values():
-        raise ConfigurationError("Invalid action")
+        raise ConfigurationError("Invalid option")
     if m.text == ConfigurationMenu.UPDATE.value:
         bot.send_message(
             m.chat.id,
             reply_markup=configurations_update_keyboard(),
-            text="Enter new value for configuration",
+            text="Please, select the configuration ⬇️",
             **DEFAULT_SEND_SETTINGS,
         )
         bot.register_next_step_handler_by_chat_id(
@@ -62,7 +68,12 @@ def select_action(m: types.Message):
         )
     else:
         configurations = ConfigurationsService.get_all_formatted()
-        bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=configurations, **DEFAULT_SEND_SETTINGS)
+        bot.send_message(
+            m.chat.id,
+            reply_markup=default_keyboard(),
+            text=configurations,
+            **DEFAULT_SEND_SETTINGS,
+        )
 
 
 @bot.message_handler(regexp=rf"^{KeyboardButtons.CONFIGURATIONS.value}")

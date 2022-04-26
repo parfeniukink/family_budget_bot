@@ -1,14 +1,16 @@
 from telebot import types
 
+from keyboards import add_restart_button
 from shared.collections import Enum
 from shared.configurations import Configurations
 
 
 class ConfigurationMenu(Enum):
-    GET_ALL = "Get all configurations"
-    UPDATE = "Update"
+    GET_ALL = "📜 Get all configurations"
+    UPDATE = "📝 Update"
 
 
+@add_restart_button
 def configurations_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
@@ -18,6 +20,7 @@ def configurations_keyboard() -> types.ReplyKeyboardMarkup:
     return markup
 
 
+@add_restart_button
 def configurations_update_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 

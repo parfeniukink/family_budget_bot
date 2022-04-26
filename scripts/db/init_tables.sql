@@ -74,3 +74,4 @@ INSERT INTO equity (currency, value) VALUES
 INSERT INTO configurations (key, value) VALUES
     ('default_currency', 'uah'),
     ('income_sources', 'Other');
+    ('dates_keyboard_max_len', '10');

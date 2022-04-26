@@ -32,8 +32,8 @@ bot = TeleBot(API_KEY)
 # Application
 ##############################################
 DEFAULT_SEND_SETTINGS: dict[str, Any] = {"disable_web_page_preview": True, "parse_mode": "HTML"}
-HELP_TEXT: str = "/restart"
-HELP_BUTTON: types.KeyboardButton = types.KeyboardButton(HELP_TEXT)
+RESTART_BUTTON_TEXT: str = "/restart"
+RESTART_BUTTON: types.KeyboardButton = types.KeyboardButton(RESTART_BUTTON_TEXT)
 ALLOWED_USER_ACCOUNT_IDS: list = Env.list(getenv("USERS_ACL", default=""))
 
 DATES_KEYBOARD_LEN: int = int(getenv("DATES_KEYBOARD_LEN", default=10))

@@ -10,7 +10,7 @@ from costs.handlers import *  # noqa
 from equity.handlers import *  # noqa
 from incomes.handlers import *  # noqa
 from keyboards import default_keyboard
-from shared.errors import user_error_handler
+from shared.handlers import user_error_handler
 from users import UsersService
 
 

@@ -10,8 +10,7 @@ from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
 from shared.categories import CATEGORIES_EMOJI
 from shared.costs import KeyboardButtons
 from shared.dates import exist_dates_keyboard
-from shared.errors import user_error_handler
-from shared.handlers import restart_handler
+from shared.handlers import restart_handler, user_error_handler
 
 __all__ = ("add_costs", "delete_costs")
 

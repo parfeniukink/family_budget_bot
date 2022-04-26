@@ -10,9 +10,8 @@ from incomes.keyboards import (
 )
 from incomes.services import IncomesService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
-from shared.errors import user_error_handler
 from shared.finances.models import Currencies
-from shared.handlers import restart_handler
+from shared.handlers import restart_handler, user_error_handler
 from shared.incomes import KeyboardButtons
 
 __all__ = ("add_incomes",)

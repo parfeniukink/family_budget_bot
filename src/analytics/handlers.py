@@ -10,13 +10,12 @@ from analytics.keyboards import (
     analytics_keyboard,
 )
 from analytics.services import AnalitycsService
+from authentication import only_for_members
 from config import DEFAULT_SEND_SETTINGS, bot
 from keyboards import default_keyboard
 from shared.analytics import KeyboardButtons
 from shared.dates import exist_dates_keyboard
-from shared.errors import user_error_handler
-from shared.handlers import restart_handler
-from authentication import only_for_members
+from shared.handlers import restart_handler, user_error_handler
 
 __all__ = ("analytics",)
 

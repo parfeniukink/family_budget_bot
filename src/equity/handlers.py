@@ -5,8 +5,7 @@ from config import bot
 from equity.services import EquityService
 from keyboards import default_keyboard
 from shared.equity import KeyboardButtons
-from shared.errors import user_error_handler
-from shared.handlers import restart_handler
+from shared.handlers import restart_handler, user_error_handler
 
 __all__ = ("equity",)
 

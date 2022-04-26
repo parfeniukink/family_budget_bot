@@ -31,7 +31,7 @@ cp .env.example .env
 
 **POSTGRES_DB** 👉 database name. Default - `family_budget`
 
-**DATES_KEYBOARD_LEN** 👉 the amount of dates in keyboard when you add costs. For example you forgot to add yesterday costs. On every costs adding you'll see the batch of dates started from today and *DATES_KEYBOARD_LEN* back
+**USERS_ACL** 👉 the list of Telegram account ids. Set it not to show your data to other people. ***Security reasons***
 
 
 

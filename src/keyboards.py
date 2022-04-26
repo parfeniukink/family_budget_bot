@@ -52,7 +52,7 @@ def confirmation_keyboard() -> types.ReplyKeyboardMarkup:
 @add_restart_button
 def dates_keyboard() -> types.ReplyKeyboardMarkup:
     DATES_KEYBOARD_AMOUNT: Configuration = ConfigurationsService.get_by_name(
-        Configurations.ADD_COSTS_DATES_AMOUNT.name.lower()
+        Configurations.KEYBOARD_DATES_AMOUNT.name.lower()
     )
 
     dates = [date.today() - timedelta(days=i) for i in range(int(DATES_KEYBOARD_AMOUNT.value))]

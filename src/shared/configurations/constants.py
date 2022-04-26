@@ -6,7 +6,7 @@ from shared.collections import Enum
 class Configurations(Enum):
     DEFAULT_CURRENCY = "💶 Default currency"
     INCOME_SOURCES = "📄 Patterns for money income sources"
-    ADD_COSTS_DATES_AMOUNT = "🔢 The amount dates in add costs"
+    KEYBOARD_DATES_AMOUNT = "🔢 The amount of dates in keyboard"
 
     @classmethod
     def get_instance_by_value(cls, val: str) -> Optional[Enum]:

@@ -41,7 +41,7 @@ def set_salary(m: types.Message, service: IncomesService):
             f"Date 👉 {date}",  # type: ignore
             f"Description 👉 {service._name}",
             f"Value 👉 {service._value}",
-            f"Currency 👉 {service._currency}",
+            f"Currency 👉 {getattr(Currencies, service._currency.upper()).value}",  # type: ignore
             f"{m.text}",
         ]
     )

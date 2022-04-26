@@ -9,7 +9,6 @@ from costs.models import Category
 from costs.services import CategoriesService, CostsService
 from incomes.models import Income
 from incomes.services import IncomesService
-from shared.categories import CATEGORIES_EMOJI
 from shared.finances.models import Currencies, DatabaseCurrencies
 from shared.sequences import build_dict_from_sequence
 from shared.strings import get_number_in_frames
@@ -30,9 +29,7 @@ class AnalitycsService:
         for id, costs_group in cls.__costs_by_category(costs):
             category: Category = categories_by_id[id]
             total_costs: Decimal = sum(costs_group)  # type: ignore
-            text += "\n" + " 👉 ".join(
-                [f"{CATEGORIES_EMOJI.get(category.name, '')} {category.name}", get_number_in_frames(total_costs)]
-            )
+            text += "\n" + " 👉 ".join([f"{category.name}", get_number_in_frames(total_costs)])
 
             percent = (total_costs * Decimal("100") / total_costs_sum).quantize(Decimal("0.1"))
             text += f"    <i>({percent})%</i>"
@@ -63,7 +60,7 @@ class AnalitycsService:
 
             report.append(
                 "\n".join(
-                    [f"<b>{CATEGORIES_EMOJI.get(category.name, '')} {category.name}</b>", costs_formatted, "\n"],
+                    [f"<b>{category.name}</b>", costs_formatted, "\n"],
                 )
             )
 

@@ -20,7 +20,9 @@ def currencies_keyboard() -> types.ReplyKeyboardMarkup:
 @add_restart_button
 def income_sources_keyboard() -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    configuration = ConfigurationsService.get_by_name(Configurations.INCOME_SOURCES.value)
+    configuration = ConfigurationsService.get_by_name(
+        Configurations.INCOME_SOURCES.name.lower(),
+    )
     sources = (configuration.value or "").split(",")
 
     for source in sources:

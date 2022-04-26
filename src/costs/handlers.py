@@ -7,7 +7,6 @@ from costs.keyboards import categories_keyboard, ids_keyboard
 from costs.models import Cost
 from costs.services import CostsService
 from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
-from shared.categories import CATEGORIES_EMOJI
 from shared.costs import KeyboardButtons
 from shared.dates import exist_dates_keyboard
 from shared.handlers import restart_handler, user_error_handler
@@ -33,13 +32,12 @@ def confirmation(m: types.Message, costs_service: CostsService):
 def add_value(m: types.Message, costs_service: CostsService):
     costs_service.add_value(m.text)
     category = costs_service._category.name if costs_service._category else ""
-    category_emoji = CATEGORIES_EMOJI.get(category, "")
     date = costs_service._date.strftime("%m-%d") if costs_service._date else ""
     next_step_text = "\n".join(
         [
             "Would you like to save this costs ❓\n",
             f"Date 👉 {date}",  # type: ignore
-            f"Category 👉 {category} {category_emoji}",  # type: ignore
+            f"Category 👉 {category}",  # type: ignore
             f"Description 👉 {costs_service._text}",
             f"Value 👉 {get_number_in_frames(costs_service._value)}",
         ]

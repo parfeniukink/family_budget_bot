@@ -1,5 +1,6 @@
 from telebot import types
 
+from authentication import only_for_members
 from config import bot
 from incomes.errors import IncomesError
 from incomes.keyboards import (
@@ -13,6 +14,8 @@ from shared.errors import user_error_handler
 from shared.finances.models import Currencies
 from shared.handlers import restart_handler
 from shared.incomes import KeyboardButtons
+
+__all__ = ("add_incomes",)
 
 
 @user_error_handler
@@ -124,6 +127,7 @@ def set_date(m: types.Message, service: IncomesService):
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_INCOME.value}")
 @user_error_handler
 @restart_handler
+@only_for_members
 def add_incomes(m: types.Message):
     bot.send_message(
         m.chat.id,

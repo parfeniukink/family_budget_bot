@@ -16,6 +16,9 @@ from shared.analytics import KeyboardButtons
 from shared.dates import exist_dates_keyboard
 from shared.errors import user_error_handler
 from shared.handlers import restart_handler
+from authentication import only_for_members
+
+__all__ = ("analytics",)
 
 
 @user_error_handler
@@ -112,6 +115,7 @@ def analytics_dispatcher(m: types.Message):
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ANALYTICS.value}")
 @user_error_handler
 @restart_handler
+@only_for_members
 def analytics(m: types.Message):
     bot.send_message(
         m.chat.id,

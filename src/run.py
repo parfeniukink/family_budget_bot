@@ -2,13 +2,8 @@ from time import sleep
 
 from loguru import logger
 
-from analytics.handlers import *  # noqa
 from config import bot, database
-from configurations.handlers import *  # noqa
-from costs.handlers import *  # noqa
-from equity.handlers import *  # noqa
 from handlers import *  # noqa
-from incomes.handlers import *  # noqa
 
 # NOTE: Init database
 database.init()

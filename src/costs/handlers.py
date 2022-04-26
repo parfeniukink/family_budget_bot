@@ -1,5 +1,6 @@
 from telebot import types
 
+from authentication import only_for_members
 from config import DEFAULT_SEND_SETTINGS, bot
 from costs.errors import CostsError
 from costs.keyboards import categories_keyboard, ids_keyboard
@@ -11,6 +12,8 @@ from shared.costs import KeyboardButtons
 from shared.dates import exist_dates_keyboard
 from shared.errors import user_error_handler
 from shared.handlers import restart_handler
+
+__all__ = ("add_costs", "delete_costs")
 
 
 #####################################################
@@ -105,6 +108,7 @@ def select_category(m: types.Message, costs_service: CostsService):
 @bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_COST.value}")
 @user_error_handler
 @restart_handler
+@only_for_members
 def add_costs(m: types.Message):
     bot.send_message(
         m.chat.id,
@@ -174,6 +178,7 @@ def select_month_for_delete(m: types.Message, service: CostsService):
 @bot.message_handler(regexp=rf"^{KeyboardButtons.DELETE_COST.value}")
 @user_error_handler
 @restart_handler
+@only_for_members
 def delete_costs(m: types.Message):
     bot.send_message(
         m.chat.id,

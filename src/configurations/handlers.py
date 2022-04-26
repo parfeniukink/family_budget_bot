@@ -1,5 +1,6 @@
 from telebot import types
 
+from authentication import only_for_members
 from config import DEFAULT_SEND_SETTINGS, bot
 from configurations.errors import ConfigurationError
 from configurations.keyboards import (
@@ -13,6 +14,8 @@ from shared.configurations.constants import Configurations
 from shared.configurations.keyboards import KeyboardButtons
 from shared.errors import user_error_handler
 from shared.handlers import restart_handler
+
+__all__ = ("configurations",)
 
 
 @user_error_handler
@@ -65,6 +68,7 @@ def select_action(m: types.Message):
 @bot.message_handler(regexp=rf"^{KeyboardButtons.CONFIGURATIONS.value}")
 @user_error_handler
 @restart_handler
+@only_for_members
 def configurations(m: types.Message):
     bot.send_message(
         m.chat.id, reply_markup=configurations_keyboard(), text="What do you want to do?", **DEFAULT_SEND_SETTINGS

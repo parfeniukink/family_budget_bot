@@ -2,12 +2,21 @@ from loguru import logger
 from telebot import types
 
 import messages
+from analytics.handlers import *  # noqa
+from authentication import only_for_members
 from config import DEFAULT_SEND_SETTINGS, bot
+from configurations.handlers import *  # noqa
+from costs.handlers import *  # noqa
+from equity.handlers import *  # noqa
+from incomes.handlers import *  # noqa
 from keyboards import default_keyboard
+from shared.errors import user_error_handler
 from users import UsersService
 
 
 @bot.message_handler(commands=["start"])
+@user_error_handler
+@only_for_members
 def start(m: types.Message):
     user, created = UsersService.save_user(m)
     if created:
@@ -29,10 +38,12 @@ def start(m: types.Message):
 
 
 @bot.message_handler(commands=["restart"])
+@user_error_handler
+@only_for_members
 def help(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),
-        text=messages.HELP_TEXT,
+        text=messages.RESTART_TEXT,
         **DEFAULT_SEND_SETTINGS,
     )

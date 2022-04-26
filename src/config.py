@@ -1,8 +1,10 @@
 from os import getenv
+from typing import Any
 
 from telebot import TeleBot, types
 
 from db import Database, DatabasesService
+from shared.env import Env
 
 ##############################################
 # Database
@@ -21,14 +23,17 @@ database: Database = database_service.get_database()
 # Bot
 ##############################################
 API_KEY = getenv("API_KEY", default="invalid")
-
 TELEGRAM_MESSAGE_MAX_LEN = 4096
 
-DEFAULT_SEND_SETTINGS = {"disable_web_page_preview": True, "parse_mode": "HTML"}
+bot = TeleBot(API_KEY)
 
-HELP_TEXT = "/restart"
-HELP_BUTTON = types.KeyboardButton(HELP_TEXT)
+
+##############################################
+# Application
+##############################################
+DEFAULT_SEND_SETTINGS: dict[str, Any] = {"disable_web_page_preview": True, "parse_mode": "HTML"}
+HELP_TEXT: str = "/restart"
+HELP_BUTTON: types.KeyboardButton = types.KeyboardButton(HELP_TEXT)
+ALLOWED_USER_ACCOUNT_IDS: list = Env.list(getenv("USERS_ACL", default=""))
 
 DATES_KEYBOARD_LEN: int = int(getenv("DATES_KEYBOARD_LEN", default=10))
-
-bot = TeleBot(API_KEY)

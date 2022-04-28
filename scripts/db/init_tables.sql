@@ -52,20 +52,22 @@ CREATE TABLE IF NOT EXISTS configurations(
 /* ************************ */
 
 INSERT INTO categories (name) VALUES
-    ('Food'),
-    ('Restaurants'),
-    ('Food delivery'),
-    ('Roads'),
-    ('Clothes'),
-    ('Car'),
-    ('Fuel'),
-    ('Household'),
-    ('Rents'),
-    ('Services'),
-    ('Leisure'),
-    ('Technical stuff'),
-    ('Other'),
-    ('Currency transactions');
+    ('🍽 Food'),
+    ('🥗 Restaurants'),
+    ('🍔 Food delivery'),
+    ('🚌 Roads'),
+    ('👚 Clothes'),
+    ('🚙 Car'),
+    ('⛽️ Fuel'),
+    ('🪴 Household'),
+    ('🤝 Rents'),
+    ('💳 Services'),
+    ('🏝 Leisure'),
+    ('💻 Technical stuff'),
+    ('📚 Education'),
+    ('🎁 Gifts'),
+    ('📦 Other');
+    ('🔄 Currency transactions');
 
 INSERT INTO equity (currency, value) VALUES
     ('uah', 0.0),

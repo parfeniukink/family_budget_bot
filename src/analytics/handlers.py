@@ -6,18 +6,56 @@ from analytics.errors import AnalyticsError
 from analytics.keyboards import (
     AnalyticsDetailOptions,
     AnalyticsOptions,
+    DetailReportOptions,
     analytics_dates_detail_keyboard,
+    analytics_details_keyboard,
     analytics_keyboard,
 )
 from analytics.services import AnalitycsService
 from authentication import only_for_members
 from config import DEFAULT_SEND_SETTINGS, bot
+from costs.services import CategoriesService
 from keyboards import default_keyboard
 from shared.analytics import KeyboardButtons
 from shared.dates import exist_dates_keyboard
 from shared.handlers import restart_handler, user_error_handler
 
 __all__ = ("analytics",)
+
+
+@user_error_handler
+@restart_handler
+def detailed_option_dispatcher(m: types.Message, month: str):
+    no_such_category_error = AnalyticsError(f"Not such category 👉 {m.text}\nPlease use keyboard below")
+    category_name = m.text
+
+    if not category_name:
+        raise no_such_category_error
+
+    if category_name == DetailReportOptions.ALL.value:
+        report = AnalitycsService.get_monthly_detailed_report(month)
+        for text in report:
+            bot.send_message(
+                m.chat.id,
+                reply_markup=default_keyboard(),
+                text=text,
+                **DEFAULT_SEND_SETTINGS,
+            )
+        return
+
+    if category_name not in {c.name for c in CategoriesService.CACHED_CATEGORIES}:
+        raise no_such_category_error
+
+    category = CategoriesService.get_by_name(category_name)
+    report = AnalitycsService.get_monthly_detailed_report(month, category)
+
+    for text in report:
+        bot.send_message(
+            m.chat.id,
+            reply_markup=default_keyboard(),
+            text=text,
+            **DEFAULT_SEND_SETTINGS,
+        )
 
 
 @user_error_handler
@@ -30,15 +68,24 @@ def monthly_dispatcher(m: types.Message, month: str):
 
     if m.text == AnalyticsDetailOptions.BASIC.value:
         report = AnalitycsService.get_monthly_basic_report(month)
+        for text in report:
+            bot.send_message(
+                m.chat.id,
+                reply_markup=default_keyboard(),
+                text=text,
+                **DEFAULT_SEND_SETTINGS,
+            )
     elif m.text == AnalyticsDetailOptions.DETAILED.value:
-        report = AnalitycsService.get_monthly_detailed_report(month)
-
-    for text in report:
         bot.send_message(
             m.chat.id,
-            reply_markup=default_keyboard(),
-            text=text,
+            reply_markup=analytics_details_keyboard(),
+            text="Now, please, select the category",
             **DEFAULT_SEND_SETTINGS,
+        )
+        bot.register_next_step_handler_by_chat_id(
+            chat_id=m.chat.id,
+            callback=detailed_option_dispatcher,
+            month=month,
         )
 
 

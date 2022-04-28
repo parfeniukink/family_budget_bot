@@ -155,7 +155,7 @@ class CostsService:
         return groupby(sorted(costs, key=attrgetter(attr)), key=attrgetter(attr))
 
     @classmethod
-    def get_monthly_costs(cls, date: str) -> dict[str, list[Cost]]:
+    def get_monthly_costs(cls, date: str, category: Optional[Category] = None) -> dict[str, list[Cost]]:
         """
         Return the list of costs for the specific month by currency.
         Used mostly for analytics.
@@ -172,7 +172,13 @@ class CostsService:
         start_date = "-".join((date, "01"))
         end_date = "-".join((date, str(last_day)))
 
-        q = f"SELECT * from {cls.__TABLE} WHERE date >='{start_date}' and date <= '{end_date}' ORDER BY date ASC"
+        category_filter_query = f"and category_id={int(category.id)}" if category else ""
+        q = (
+            f"SELECT * from {cls.__TABLE} WHERE date >='{start_date}' "
+            f"and date <= '{end_date}' "
+            f"{category_filter_query} ORDER BY date ASC"
+        )
+
         data = database.raw_execute(q)
         costs = [Cost(**item) for item in data]
 
@@ -198,10 +204,13 @@ class CostsService:
         return {currency: list(costs_iter) for currency, costs_iter in cls.get_costs_by_currency(costs)}
 
     @classmethod
-    def delete_by_id(cls, id: Any) -> None:
+    def delete_by_id(cls, cost_id: Any, allowed_ids: set[int]) -> None:
         try:
-            int(id)
+            cost_id = int(cost_id)
         except ValueError:
-            raise CostsError("⚠️ Invalid id value. It should be a number")
+            raise CostsError("Invalid id value. It should be a number")
 
-        database.delete(cls.__TABLE, "id", id)
+        if cost_id not in allowed_ids:
+            raise CostsError(f"Can't find id 👉 {cost_id}\nPlease use the keyboard below!")
+
+        database.delete(cls.__TABLE, "id", cost_id)

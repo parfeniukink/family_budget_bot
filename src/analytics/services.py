@@ -2,7 +2,7 @@ from contextlib import suppress
 from decimal import Decimal
 from itertools import groupby
 from operator import attrgetter
-from typing import Iterable
+from typing import Iterable, Optional
 
 from costs import Cost
 from costs.models import Category
@@ -128,13 +128,13 @@ class AnalitycsService:
         return message
 
     @classmethod
-    def get_monthly_detailed_report(cls, month: str) -> Iterable[str]:
+    def get_monthly_detailed_report(cls, month: str, category: Optional[Category] = None) -> Iterable[str]:
         """
         This is a general interface to get monthly costs and incomes analytics
         Return the list of costs by category with headers.
         The last element in the list is incomes
         """
-        costs: dict[str, list[Cost]] = CostsService.get_monthly_costs(month)
+        costs: dict[str, list[Cost]] = CostsService.get_monthly_costs(month, category)
         incomes: dict[str, list[Income]] = IncomesService.get_monthly_incomes(month)
         categories_by_id: dict[int, Category] = build_dict_from_sequence(
             CategoriesService.CACHED_CATEGORIES,
@@ -152,16 +152,17 @@ class AnalitycsService:
                 cls.__get_detailed_costs(categories_by_id, costs[DatabaseCurrencies.USD.value], Currencies.USD.value)
             )
 
-        cached_users: dict[int, User] = {}
-        uah_incomes: str = IncomesService.get_detailed_incomes_message(
-            cached_users, incomes[DatabaseCurrencies.UAH.value]
-        )
-        usd_incomes: str = IncomesService.get_detailed_incomes_message(
-            cached_users, incomes[DatabaseCurrencies.USD.value]
-        )
+        if not category:
+            cached_users: dict[int, User] = {}
+            uah_incomes: str = IncomesService.get_detailed_incomes_message(
+                cached_users, incomes[DatabaseCurrencies.UAH.value]
+            )
+            usd_incomes: str = IncomesService.get_detailed_incomes_message(
+                cached_users, incomes[DatabaseCurrencies.USD.value]
+            )
 
-        incomes_message = "\n".join(["<b>Incomes 💸\n</b>", uah_incomes, usd_incomes])
-        report.append(incomes_message)
+            incomes_message = "\n".join(["<b>Incomes 💸\n</b>", uah_incomes, usd_incomes])
+            report.append(incomes_message)
 
         return report
 

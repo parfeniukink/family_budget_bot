@@ -115,7 +115,7 @@ class Postgres:
         return result
 
     def delete(self, table: str, column: str, value: str) -> dict:
-        value = value if value.isdigit() else f"'{value}'"
+        value = value if str(value).isdigit() else f"'{value}'"
         q = f"DELETE from {table} WHERE {column}={value} RETURNING *"
 
         with self.cursor() as cursor:

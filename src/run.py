@@ -2,14 +2,11 @@ from time import sleep
 
 from loguru import logger
 
-from config import bot, database
-from handlers import *  # noqa
-
-# NOTE: Init database
-database.init()
+from bot import bot
+from configurations.handlers import *  # noqa
+from startup.handlers import *  # noqa
 
 
-# NOTE: Start bot
 def start_bot():
     try:
         logger.info("Bot started 🚀")

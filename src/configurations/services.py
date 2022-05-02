@@ -1,18 +1,18 @@
 from typing import Optional
 
-from config import database
-from configurations.errors import ConfigurationError
-from configurations.models import Configuration
-from shared.collections import Enum
-from shared.configurations import Configurations, DefaultCurrencies
+import messages
+from configurations.domain import Configuration, ConfigurationError, Configurations
+from db import database
+from finances import Currencies
+from shared.domain import Enum
 
 
 class ConfigurationsCache(type):
-    CONFIGURATIONS_TABLE = "configurations"
+    __TABLE = "configurations"
 
     @classmethod
     def get_configurations(cls) -> list[Configuration]:
-        return [Configuration(**item) for item in database.fetchall(cls.CONFIGURATIONS_TABLE)]
+        return [Configuration(**item) for item in database.fetchall(cls.__TABLE)]
 
     def __getattr__(cls, attr):
         if attr == "CACHED_CONFIGURATIONS":
@@ -23,7 +23,7 @@ class ConfigurationsCache(type):
 
 
 class ConfigurationsService(metaclass=ConfigurationsCache):
-    TABLE = "configurations"
+    __TABLE = "configurations"
     CACHED_CONFIGURATIONS: list[Configuration]
 
     @classmethod
@@ -38,7 +38,7 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
         configurations = "\n\n".join(
             [f"{getattr(Configurations, c.key.upper()).value} 👉 {c.value}" for c in cls.CACHED_CONFIGURATIONS],
         )
-        return f"⚙️ <b>Active configuratoins</b>\n\n{configurations}"
+        return messages.CONFIGURATIONS_LIST.format(configurations=configurations)
 
     @classmethod
     def data_is_valid(cls, data: tuple[str, Optional[str]]) -> None:
@@ -48,8 +48,8 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
             raise ConfigurationError("Configuration value is not set")
         if data[0] not in Configurations.values():
             raise ConfigurationError("Invalid configuratoin selected")
-        if data[0] == Configurations.DEFAULT_CURRENCY.value and data[1] not in DefaultCurrencies.values():
-            raise ConfigurationError(f"Invalid currency. Allowed: {DefaultCurrencies.values()}")
+        if data[0] == Configurations.DEFAULT_CURRENCY.value and data[1] not in Currencies.get_database_values():
+            raise ConfigurationError(f"Invalid currency. Allowed: {Currencies.get_database_values()}")
         if data[0] == Configurations.INCOME_SOURCES.value and ", " in data[1]:
             text = "\n".join(
                 (
@@ -78,7 +78,7 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
             raise ConfigurationError(f"Can not find configuration {config_name} in database")
 
         update_data: dict = database.update(
-            cls.TABLE, data=("value", str(data[1])), condition=("key", config_name.name.lower())
+            cls.__TABLE, data=("value", str(data[1])), condition=("key", config_name.name.lower())
         )
         configuration = Configuration(**update_data)
 

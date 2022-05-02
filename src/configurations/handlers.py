@@ -1,46 +1,53 @@
 from telebot import types
 
-from authentication import only_for_members
-from config import DEFAULT_SEND_SETTINGS, bot
-from configurations.errors import ConfigurationError
+import messages
+from bot import bot
+from configurations.domain import (
+    ConfigurationError,
+    Configurations,
+    ConfigurationsGeneralMenu,
+    ConfigurationsMenu,
+)
 from configurations.keyboards import (
-    ConfigurationMenu,
     configurations_keyboard,
     configurations_update_keyboard,
 )
 from configurations.services import ConfigurationsService
-from keyboards import default_keyboard
-from shared.configurations import Configurations
-from shared.configurations.keyboards import KeyboardButtons
-from shared.handlers import restart_handler, user_error_handler
+from settings import DEFAULT_SEND_SETTINGS
+from shared.domain import base_error_handler, restart_handler
+from shared.keyboards import default_keyboard
+from users import UsersService
 
 __all__ = ("configurations",)
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
+@UsersService.only_for_members
 def update_configuration(m: types.Message, name: str):
     configuration = ConfigurationsService.update(data=(name, m.text))
+    configuration_name = getattr(Configurations, configuration.key.upper()).value
     bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),
-        text=(
-            "✅ Configuration updated "
-            f"{getattr(Configurations, configuration.key.upper()).value} 👉 {configuration.value}"
+        text=messages.CONFIGURATION_UPDATED.format(
+            configuration_name=configuration_name,
+            configuration_value=configuration.value,
         ),
         **DEFAULT_SEND_SETTINGS,
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
+@UsersService.only_for_members
 def select_configuration(m: types.Message):
     if m.text not in Configurations.values():
-        raise ConfigurationError("Invalid configuration selected")
+        raise ConfigurationError(messages.CONFIGURATION_INVALID)
     bot.send_message(
         m.chat.id,
         reply_markup=types.ReplyKeyboardRemove(),
-        text="Enter new value for configuration ⬇️",
+        text=messages.CONFIGURATION_ENTER_PROMPT,
         **DEFAULT_SEND_SETTINGS,
     )
     bot.register_next_step_handler_by_chat_id(
@@ -50,12 +57,12 @@ def select_configuration(m: types.Message):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def select_action(m: types.Message):
-    if m.text not in ConfigurationMenu.values():
+    if m.text not in ConfigurationsMenu.values():
         raise ConfigurationError("Invalid option")
-    if m.text == ConfigurationMenu.UPDATE.value:
+    if m.text == ConfigurationsMenu.UPDATE.value:
         bot.send_message(
             m.chat.id,
             reply_markup=configurations_update_keyboard(),
@@ -76,13 +83,16 @@ def select_action(m: types.Message):
         )
 
 
-@bot.message_handler(regexp=rf"^{KeyboardButtons.CONFIGURATIONS.value}")
-@user_error_handler
+@bot.message_handler(regexp=rf"^{ConfigurationsGeneralMenu.CONFIGURATIONS.value}")
+@base_error_handler
 @restart_handler
-@only_for_members
+@UsersService.only_for_members
 def configurations(m: types.Message):
     bot.send_message(
-        m.chat.id, reply_markup=configurations_keyboard(), text="What do you want to do?", **DEFAULT_SEND_SETTINGS
+        m.chat.id,
+        reply_markup=configurations_keyboard(),
+        text="What do you want to do?",
+        **DEFAULT_SEND_SETTINGS,
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,

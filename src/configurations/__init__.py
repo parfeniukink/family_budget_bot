@@ -1,3 +1,2 @@
-from configurations.errors import *  # noqa
-from configurations.models import *  # noqa
-from configurations.services import *  # noqa
+from configurations.domain import *  # noqa
+from configurations.keyboards import *  # noqa

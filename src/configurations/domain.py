@@ -19,9 +19,9 @@ class ConfigurationsMenu(Enum):
 
 
 class Configurations(Enum):
-    DEFAULT_CURRENCY = "💶 Default currency"
-    INCOME_SOURCES = "📄 Patterns for money income sources"
-    KEYBOARD_DATES_AMOUNT = "🔢 The amount of dates in keyboard"
+    DEFAULT_CURRENCY = "⚪️ Default currency"
+    INCOME_SOURCES = "⚪️ Patterns for money income sources"
+    KEYBOARD_DATES_AMOUNT = "⚪️ The amount of dates in keyboard"
 
     @classmethod
     def get_instance_by_value(cls, val: str) -> Optional[Enum]:

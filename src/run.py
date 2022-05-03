@@ -2,8 +2,12 @@ from time import sleep
 
 from loguru import logger
 
+from analytics.handlers import *  # noqa
 from bot import bot
 from configurations.handlers import *  # noqa
+from costs.handlers import *  # noqa
+from equity.handlers import *  # noqa
+from incomes.handlers import *  # noqa
 from startup.handlers import *  # noqa
 
 

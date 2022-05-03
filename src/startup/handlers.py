@@ -1,11 +1,12 @@
 from loguru import logger
 from telebot import types
 
-import messages
 from bot import bot
 from settings import DEFAULT_SEND_SETTINGS
 from shared.domain import base_error_handler
 from shared.keyboards import default_keyboard
+from shared.messages import LINE_ITEM, RESTART
+from startup.messages import USER_CREATED_MESSAGE, USER_EXISTS_MESSAGE
 from users import UsersCRUD
 
 
@@ -14,19 +15,19 @@ from users import UsersCRUD
 def start(m: types.Message):
     user, created = UsersCRUD.save_user(m)
     if created:
-        logger.success(f"Created new user -> {user.username}")
+        logger.success(LINE_ITEM.format(key="Created a new user", value=user.username))
         bot.send_message(
             m.chat.id,
             reply_markup=default_keyboard(),
-            text=messages.USER_CREATED,
+            text=USER_CREATED_MESSAGE,
             **DEFAULT_SEND_SETTINGS,
         )
     else:
-        logger.info(f"User exists -> {user.username}")
+        logger.info(LINE_ITEM.format(key="User exists", value=user.username))
         bot.send_message(
             m.chat.id,
             reply_markup=default_keyboard(),
-            text=messages.USER_EXISTS,
+            text=USER_EXISTS_MESSAGE,
             **DEFAULT_SEND_SETTINGS,
         )
 
@@ -37,6 +38,6 @@ def restart(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),
-        text=messages.RESTART,
+        text=RESTART,
         **DEFAULT_SEND_SETTINGS,
     )

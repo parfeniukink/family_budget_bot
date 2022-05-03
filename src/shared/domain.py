@@ -11,6 +11,7 @@ from telebot import types
 from bot import bot
 from settings import DEFAULT_SEND_SETTINGS, RESTART_BUTTON_TEXT
 from shared.keyboards import default_keyboard
+from shared.messages import ABORTED
 
 
 class BaseError(Exception):
@@ -28,11 +29,7 @@ def restart_handler(func):
     @wraps(func)
     def inner(m: types.Message, *args, **kwargs):
         if m.text == RESTART_BUTTON_TEXT:
-            bot.send_message(
-                m.chat.id,
-                reply_markup=default_keyboard(),
-                text="⚠️ Aborted",
-            )
+            bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=ABORTED)
         else:
             return func(m, *args, **kwargs)
 

@@ -20,11 +20,19 @@ def add_restart_button(func: Callable) -> Callable:
 
 @add_restart_button
 def default_keyboard() -> types.ReplyKeyboardMarkup:
+    from analytics import AnalyticsGeneralMenu
     from configurations import ConfigurationsGeneralMenu
+    from costs import CostsGeneralMenu
+    from equity import EquityGeneralMenu
+    from incomes import IncomesGeneralMenu
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     for button in chain(
+        CostsGeneralMenu.values(),
+        IncomesGeneralMenu.values(),
+        AnalyticsGeneralMenu.values(),
+        EquityGeneralMenu.values(),
         ConfigurationsGeneralMenu.values(),
     ):
         markup.add(types.KeyboardButton(button))

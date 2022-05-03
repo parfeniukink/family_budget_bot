@@ -3,6 +3,11 @@ from typing import Iterable
 from shared.domain import Enum
 
 
+class Operations(Enum):
+    SUBTRACT = "-"
+    ADD = "+"
+
+
 class Currencies(Enum):
     UAH = "🇺🇦 UAH 🇺🇦"
     USD = "🇺🇸 USD 🇺🇸"
@@ -13,9 +18,9 @@ class Currencies(Enum):
 
     @classmethod
     def get_database_value(cls, value: str) -> str:
-        if value == cls.UAH.value:
-            return cls.UAH.value.lower()
-        if value == cls.USD.value:
-            return cls.USD.value.lower()
+        if cls.UAH.name in value.upper():
+            return cls.UAH.name.lower()
+        if cls.USD.name in value.upper():
+            return cls.USD.name.lower()
 
         raise ValueError("Invalid currency")

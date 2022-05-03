@@ -2,11 +2,11 @@
 
 </br>
 
-✅ This is a family budget bot, developerd for Telegram messanger
+✅ This is a family budget bot, developed for Telegram messenger
 
-✅ Use it as collaborational tool to save costs and incomes
+✅ Use it as collaboration tool to save costs and incomes
 
-✅ Also, you can find pertty usefull monthly or annually analytics
+✅ Also, you can find pretty useful monthly or annually analytics
 
 
 
@@ -29,8 +29,8 @@ pre-commit install
 | --- | ------------- | ----------- |
 | `COMPOSE_FILE` | `docker-compose.yaml` | Docker-compose file you would like to use. Use `docker-compose.yaml` for production and `docker-compose.dev.yaml` for development
 | `API_KEY` | - | Telegram API key. Get it from [**BotFather**](https://t.me/botfather) |
-| `DATABASE_URL` | `postgresql://postgres:postgres@postgres:5432/family_budget` | Database URL that should match pattern: `db_engine://username:password@host:port/db_name` </br> **Note:** *currenctly Bot allowes you to use only `postgresql` database engine*
-| `USERS_ACL` | - | The list of Telegram account ids. Set it not to show your data to other people. </br> **Note:** 99% of features allowed only for bot members you pass throw this variable |
+| `DATABASE_URL` | `postgresql://postgres:postgres@postgres:5432/family_budget` | Database URL that should match pattern: `db_engine://username:password@host:port/db_name` </br> **Note:** *curently Bot allows you to use only `postgresql` database engine*
+| `USERS_ACL` | - | The list of Telegram account ids. Set it not to show your data to other people. </br> **Note:** 99% of features allowed only for bot members, you pass throw this variable |
 
 
 

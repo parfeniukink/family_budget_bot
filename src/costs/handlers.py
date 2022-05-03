@@ -1,16 +1,32 @@
 from telebot import types
 
-from authentication import only_for_members
-from config import DEFAULT_SEND_SETTINGS, bot
-from costs.errors import CostsError
-from costs.keyboards import categories_keyboard, ids_keyboard
-from costs.models import Cost
+from bot import bot
+from categories import categories_keyboard
+from costs.domain import Cost, CostsError, CostsGeneralMenu
+from costs.keyboards import ids_keyboard
+from costs.messages import (
+    COST_ADD_CATEGORY_SELECT_PROMPT,
+    COST_ADD_CATEGORY_SELECTED_MESSAGE,
+    COST_ADD_CONFIRMATION_MESSAGE,
+    COST_ADD_DATE_SELECTED_MESSAGE,
+    COST_DELETE_CATEGORY_SELECTED_MESSAGE,
+    COST_DELETE_DATE_SELECTED_MESSAGE,
+    COST_DELETE_MONTH_SELECT_PROMPT,
+    COST_DELETED_MESSAGE,
+    COST_DESCRIPTION_ADDED_MESSAGE,
+    COST_NOT_FOUND_FOR_CATEGORY_MESSAGE,
+    COST_NOT_SAVED_MESSAGE,
+    COST_SAVED_MESSAGE,
+    NO_MONTH_SELECTED_ERROR,
+)
 from costs.services import CostsService
-from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
-from shared.costs import KeyboardButtons
-from shared.dates import exist_dates_keyboard
-from shared.handlers import restart_handler, user_error_handler
-from shared.strings import get_number_in_frames
+from dates import dates_keyboard, exist_dates_keyboard
+from settings import DEFAULT_SEND_SETTINGS
+from shared.domain import base_error_handler, restart_handler
+from shared.formatting import get_number_in_frames
+from shared.keyboards import confirmation_keyboard, default_keyboard
+from shared.messages import CATEGORY_NOT_SELECTED_ERROR
+from users import UsersService
 
 __all__ = ("add_costs", "delete_costs")
 
@@ -18,29 +34,28 @@ __all__ = ("add_costs", "delete_costs")
 #####################################################
 # Add costs
 #####################################################
-@user_error_handler
+@base_error_handler
 @restart_handler
 def confirmation(m: types.Message, costs_service: CostsService):
     processed: bool = costs_service.process_confirmation(m.text)
-    message = "✅ Costs saved" if processed else "❌ Costs wasn't added"
+    message = COST_SAVED_MESSAGE if processed else COST_NOT_SAVED_MESSAGE
 
     bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=message)
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def add_value(m: types.Message, costs_service: CostsService):
     costs_service.add_value(m.text)
     category = costs_service._category.name if costs_service._category else ""
     date = costs_service._date.strftime("%m-%d") if costs_service._date else ""
-    next_step_text = "\n".join(
-        [
-            "Would you like to save this costs ❓\n",
-            f"Date 👉 {date}",  # type: ignore
-            f"Category 👉 {category}",  # type: ignore
-            f"Description 👉 {costs_service._text}",
-            f"Value 👉 {get_number_in_frames(costs_service._value)}",
-        ]
+    next_step_text = COST_ADD_CONFIRMATION_MESSAGE.format(
+        date=date,
+        category=category,
+        description=costs_service._text,
+        value=get_number_in_frames(
+            costs_service._value,
+        ),
     )
     bot.send_message(
         m.chat.id,
@@ -55,14 +70,14 @@ def add_value(m: types.Message, costs_service: CostsService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def add_text(m: types.Message, costs_service: CostsService):
     costs_service.add_text(m.text)
     bot.send_message(
         m.chat.id,
         reply_markup=types.ReplyKeyboardRemove(),
-        text=f"✅ Description added 👉 {m.text}\nNow, please, enter the value",
+        text=COST_DESCRIPTION_ADDED_MESSAGE.format(description=m.text),
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -71,14 +86,14 @@ def add_text(m: types.Message, costs_service: CostsService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def select_date(m: types.Message, costs_service: CostsService):
     costs_service.set_date(m.text)
     bot.send_message(
         m.chat.id,
         reply_markup=types.ReplyKeyboardRemove(),
-        text=f"✅ Date selected 👉 {m.text}\nNow, please, enter the description",
+        text=COST_ADD_DATE_SELECTED_MESSAGE.format(date=m.text),
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -87,14 +102,14 @@ def select_date(m: types.Message, costs_service: CostsService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def select_category(m: types.Message, costs_service: CostsService):
     costs_service.set_category(m.text)
     bot.send_message(
         m.chat.id,
         reply_markup=dates_keyboard(),
-        text=f"✅ Category 👉 {m.text} selected\nNow, please, select the date 📅 from the list",
+        text=COST_ADD_CATEGORY_SELECTED_MESSAGE.format(category=m.text),
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -103,15 +118,15 @@ def select_category(m: types.Message, costs_service: CostsService):
     )
 
 
-@bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_COST.value}")
-@user_error_handler
+@bot.message_handler(regexp=rf"^{CostsGeneralMenu.ADD_COST.value}")
+@base_error_handler
 @restart_handler
-@only_for_members
+@UsersService.only_for_members
 def add_costs(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=categories_keyboard(),
-        text="Please, select category from the list",
+        text=COST_ADD_CATEGORY_SELECT_PROMPT,
     )
     costs_service = CostsService(account_id=m.from_user.id)
 
@@ -121,31 +136,41 @@ def add_costs(m: types.Message):
 #####################################################
 # Delete costs
 #####################################################
-@user_error_handler
+@base_error_handler
 @restart_handler
 def select_id_for_delete(m: types.Message, service: CostsService, allowed_ids: set[int]):
     service.delete_by_id(str(m.text), allowed_ids)
-    bot.send_message(m.chat.id, reply_markup=default_keyboard(), text="✅ Cost removed")
+    bot.send_message(
+        m.chat.id,
+        reply_markup=default_keyboard(),
+        text=COST_DELETED_MESSAGE,
+    )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def select_category_for_delete(m: types.Message, service: CostsService, costs: list[Cost]):
     service.set_category(m.text)
-    filtered_costs = [cost for cost in costs if cost.category_id == service._category.id]  # type: ignore
+    if not service._category:
+        raise CostsError(CATEGORY_NOT_SELECTED_ERROR)
+
+    filtered_costs = [cost for cost in costs if cost.category_id == service._category.id]
     if not filtered_costs:
         bot.send_message(
             m.chat.id,
             reply_markup=default_keyboard(),
-            text=f"✅ No costs in {m.text} category",
+            text=COST_NOT_FOUND_FOR_CATEGORY_MESSAGE.format(cost=m.text),
         )
     else:
-        f_costs = service.get_formatted_costs_for_delete(filtered_costs)
+        fcosts = service.get_formatted_costs_for_delete(filtered_costs)
 
         bot.send_message(
             m.chat.id,
             reply_markup=ids_keyboard(reversed(filtered_costs)),
-            text=f"✅ Category selected 👉 {m.text}\nNow, please, select the id to delete\n\n{f_costs}",
+            text=COST_DELETE_CATEGORY_SELECTED_MESSAGE.format(
+                category=m.text,
+                costs=fcosts,
+            ),
             **DEFAULT_SEND_SETTINGS,
         )
         bot.register_next_step_handler_by_chat_id(
@@ -156,11 +181,11 @@ def select_category_for_delete(m: types.Message, service: CostsService, costs: l
         )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def select_month_for_delete(m: types.Message, service: CostsService):
     if not m.text:
-        raise CostsError("⚠️ No month selected")
+        raise CostsError(NO_MONTH_SELECTED_ERROR)
 
     costs: dict[str, list[Cost]] = service.get_monthly_costs(m.text)
     merged_costs = [el for key in costs for el in costs[key]]
@@ -168,7 +193,7 @@ def select_month_for_delete(m: types.Message, service: CostsService):
     bot.send_message(
         m.chat.id,
         reply_markup=categories_keyboard(),
-        text=f"✅ Date selected 👉 {m.text}\nNow, please, select category",
+        text=COST_DELETE_DATE_SELECTED_MESSAGE.format(month=m.text),
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -178,15 +203,15 @@ def select_month_for_delete(m: types.Message, service: CostsService):
     )
 
 
-@bot.message_handler(regexp=rf"^{KeyboardButtons.DELETE_COST.value}")
-@user_error_handler
+@bot.message_handler(regexp=rf"^{CostsGeneralMenu.DELETE_COST.value}")
+@base_error_handler
 @restart_handler
-@only_for_members
+@UsersService.only_for_members
 def delete_costs(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=exist_dates_keyboard(),
-        text="Please, select month from the list",
+        text=COST_DELETE_MONTH_SELECT_PROMPT,
     )
     service = CostsService(account_id=m.from_user.id)
 

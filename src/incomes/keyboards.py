@@ -1,10 +1,9 @@
 from telebot import types
 
-from configurations import ConfigurationsService
-from incomes.models import SalaryAnswers
-from keyboards import add_restart_button
-from shared.configurations import Configurations
-from shared.finances import Currencies
+from configurations import Configurations, ConfigurationsService
+from finances import Currencies
+from incomes.domain import SalaryAnswers
+from shared.keyboards import add_restart_button
 
 
 @add_restart_button

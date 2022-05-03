@@ -1,1 +1,2 @@
-from incomes.models import *  # noqa
+from incomes.domain import *  # noqa
+from incomes.services import *  # noqa

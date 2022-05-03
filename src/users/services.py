@@ -1,13 +1,32 @@
-from typing import Optional
+from typing import Callable, Optional
 
 from telebot import types
 
-from config import database
-from db import DatabaseError
-from users.models import User
+from db import DatabaseError, database
+from settings import ALLOWED_USER_ACCOUNT_IDS
+from shared.domain import BaseError
+from users.domain import User
+
+__all__ = ("UsersService", "UsersCRUD")
 
 
 class UsersService:
+    @staticmethod
+    def only_for_members(func) -> Callable:
+        """
+        Check if user id is present in the allowed list.
+        Use as decorator for handlers
+        """
+
+        def inner(m: types.Message, *args, **kwargs):
+            if str(m.from_user.id) not in ALLOWED_USER_ACCOUNT_IDS:
+                raise BaseError("Sorry, you have not access to this Bot")
+            return func(m, *args, **kwargs)
+
+        return inner
+
+
+class UsersCRUD:
     USERS_TABLE = "users"
 
     @classmethod

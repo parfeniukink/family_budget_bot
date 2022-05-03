@@ -1,49 +1,60 @@
 from telebot import types
 
-from authentication import only_for_members
-from config import bot
-from incomes.errors import IncomesError
+from bot import bot
+from dates import dates_keyboard
+from finances import Currencies
+from incomes.domain import IncomesError, IncomesGeneralMenu
 from incomes.keyboards import (
     currencies_keyboard,
     income_sources_keyboard,
     salary_keyboard,
 )
+from incomes.messages import (
+    INCOME_DATE_ADDED_MESSAGE,
+    INCOME_IS_SALARY_PROMPT,
+    INCOME_NAME_ADDED_MESSAGE,
+    INCOME_NOT_SAVED_MESSAGE,
+    INCOME_OPTION_INVALID_ERROR,
+    INCOME_SAVE_CONFIRMATION_MESSAGE,
+    INCOME_SAVED_MESSAGE,
+    INCOME_VALUE_ADDED_MESSAGE,
+    SELECT_DATE_PROMPT,
+)
 from incomes.services import IncomesService
-from keyboards import confirmation_keyboard, dates_keyboard, default_keyboard
-from shared.finances.models import Currencies
-from shared.handlers import restart_handler, user_error_handler
-from shared.incomes import KeyboardButtons
+from shared.domain import base_error_handler, restart_handler
+from shared.keyboards import confirmation_keyboard, default_keyboard
+from shared.messages import CURRENCY_INVALID_ERROR
+from users import UsersService
 
 __all__ = ("add_incomes",)
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def confirmation(m: types.Message, service: IncomesService):
     processed: bool = service.process_confirmation(m.text)
-    message = "Incomes saved" if processed else "Incomes wasn't added"
+    message = INCOME_SAVED_MESSAGE if processed else INCOME_NOT_SAVED_MESSAGE
 
     bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=message)
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def set_salary(m: types.Message, service: IncomesService):
     service.set_salary(m.text)
     date = service._date.strftime("%m-%d") if service._date else ""
 
     if service._salary is None:
-        raise IncomesError("Unknown income option")
+        raise IncomesError(INCOME_OPTION_INVALID_ERROR)
+    if service._currency is None:
+        raise IncomesError(CURRENCY_INVALID_ERROR.format(allowed=Currencies.get_database_values()))
 
-    next_step_text = "\n".join(
-        [
-            "Would you like to save this income ❓\n",
-            f"Date 👉 {date}",  # type: ignore
-            f"Description 👉 {service._name}",
-            f"Value 👉 {service._value}",
-            f"Currency 👉 {getattr(Currencies, service._currency.upper()).value}",  # type: ignore
-            f"{m.text}",
-        ]
+    next_step_text = INCOME_SAVE_CONFIRMATION_MESSAGE.format(
+        date=date,
+        description=service._name,
+        value=service._value,
+        currency=getattr(Currencies, service._currency.upper()).value,
+        source=m.text,
     )
 
     bot.send_message(m.chat.id, text=next_step_text, reply_markup=confirmation_keyboard())
@@ -55,18 +66,21 @@ def set_salary(m: types.Message, service: IncomesService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def set_currency(m: types.Message, service: IncomesService):
     service.set_currency(m.text)
 
     if not service._currency:
-        raise IncomesError("Unknown currency")
+        raise IncomesError(CURRENCY_INVALID_ERROR.format(allowed=Currencies.get_database_values()))
 
     currency = getattr(Currencies, service._currency.upper(), Currencies.UAH)
-    next_step_text = "\n".join([f"Currency 👉 {currency.value}", "Is it salary?"])
 
-    bot.send_message(m.chat.id, text=next_step_text, reply_markup=salary_keyboard())
+    bot.send_message(
+        m.chat.id,
+        text=INCOME_IS_SALARY_PROMPT.format(currency=currency.value),
+        reply_markup=salary_keyboard(),
+    )
 
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -75,13 +89,13 @@ def set_currency(m: types.Message, service: IncomesService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def set_value(m: types.Message, service: IncomesService):
     service.set_value(m.text)
     bot.send_message(
         m.chat.id,
-        text=f"✅ Value added 👉 {m.text}\nNow, please select the currency from the list",
+        text=INCOME_VALUE_ADDED_MESSAGE.format(value=m.text),
         reply_markup=currencies_keyboard(),
     )
     bot.register_next_step_handler_by_chat_id(
@@ -91,14 +105,14 @@ def set_value(m: types.Message, service: IncomesService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def set_name(m: types.Message, service: IncomesService):
     service.set_name(m.text)
     bot.send_message(
         m.chat.id,
         reply_markup=types.ReplyKeyboardRemove(),
-        text=f"✅ Name added 👉 {m.text}\nNow, please, enter the value:",
+        text=INCOME_NAME_ADDED_MESSAGE.format(name=m.text),
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -107,14 +121,14 @@ def set_name(m: types.Message, service: IncomesService):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def set_date(m: types.Message, service: IncomesService):
     service.set_date(m.text)
     bot.send_message(
         m.chat.id,
         reply_markup=income_sources_keyboard(),
-        text=f"✅Date added 👉 {m.text}\nNow, please, enter the name:",
+        text=INCOME_DATE_ADDED_MESSAGE.format(date=m.text),
     )
     bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
@@ -123,15 +137,15 @@ def set_date(m: types.Message, service: IncomesService):
     )
 
 
-@bot.message_handler(regexp=rf"^{KeyboardButtons.ADD_INCOME.value}")
-@user_error_handler
+@bot.message_handler(regexp=rf"^{IncomesGeneralMenu.ADD_INCOME.value}")
+@base_error_handler
 @restart_handler
-@only_for_members
+@UsersService.only_for_members
 def add_incomes(m: types.Message):
     bot.send_message(
         m.chat.id,
         reply_markup=dates_keyboard(),
-        text="Please, select date from the list",
+        text=SELECT_DATE_PROMPT,
     )
     service = IncomesService(account_id=m.from_user.id)
     bot.register_next_step_handler_by_chat_id(

@@ -4,12 +4,15 @@ from typing import Any, Optional
 import psycopg2
 from loguru import logger
 
-from db.constants import SCRIPTS_FOLDER
-from db.models import ConnectionData
+from db.domain import ConnectionData
+from settings import ROOT_FOLDER
+
+SCRIPTS_DIR = ROOT_FOLDER / "scripts"
 
 
-# Follows Database protocol
 class Postgres:
+    """This class follows src/db/protocols.py:Protocol"""
+
     def __init__(self, connection_data: ConnectionData) -> None:
         self._connection_data = connection_data
 
@@ -33,7 +36,7 @@ class Postgres:
                 connection.close()
 
     def __create_new_tables(self) -> None:
-        filename = SCRIPTS_FOLDER / "init_tables.sql"
+        filename = SCRIPTS_DIR / "init_tables.sql"
         with open(filename) as f:
             query = f.read()
         with self.cursor() as cursor:

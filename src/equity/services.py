@@ -1,38 +1,34 @@
-from typing import Union
+from decimal import Decimal
 
-from config import database
-from costs.models import Cost
-from equity.models import Equity
-from incomes import Income
-from shared.finances import Currencies
-from shared.strings import get_number_in_frames
+from db import database
+from equity.domain import Equity, EquityGeneralMenu
+from finances import Currencies, Operations
+from shared.formatting import get_number_in_frames
+from shared.messages import LINE_ITEM
 
 
-class EquityService:
-    TABLE = "equity"
+class EquityCRUD:
+    __TABLE = "equity"
 
     @classmethod
     def get_formatted(cls) -> str:
-        data = database.fetchall(cls.TABLE)
+        data = database.fetchall(cls.__TABLE)
         equity_all = (Equity(**d) for d in data)
 
-        f_equity = "\n".join(
+        fequity = "\n".join(
             (
-                " ➙ ".join([getattr(Currencies, e.currency.upper()).value, get_number_in_frames(e.value)])
+                LINE_ITEM.format(key=getattr(Currencies, e.currency.upper()).value, value=get_number_in_frames(e.value))
                 for e in equity_all
             )
         )
-        result = "\n\n".join(("Equity 🏦", f_equity))
+        result = "\n\n".join((EquityGeneralMenu.EQUITY.value, fequity))
 
         return result
 
     @classmethod
-    def update(cls, instance: Union[Cost, Income]) -> Equity:
-        operation = "-" if isinstance(instance, Cost) else "+"
-        q = (
-            f"UPDATE {cls.TABLE} SET value=value{operation}{instance.value} "
-            f"WHERE currency='{instance.currency}' RETURNING *"
-        )
+    def update(cls, *_, operation: Operations, value: Decimal, currency: str) -> Equity:
+        op = operation.value if operation is Operations.SUBTRACT else Operations.ADD.value
+        q = f"UPDATE {cls.__TABLE} SET value=value{op}{value} " f"WHERE currency='{currency}' RETURNING *"
 
         data = database.raw_execute(q)[0]
         return Equity(**data)

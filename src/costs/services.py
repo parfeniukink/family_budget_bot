@@ -5,62 +5,23 @@ from itertools import groupby
 from operator import attrgetter
 from typing import Any, Iterable, Optional
 
-from config import database
+from categories import CategoriesService, Category
 from configurations import ConfigurationsService
-from costs.errors import CostsError
-from costs.models import Category, Cost
-from equity.services import EquityService
-from shared.finances import DatabaseCurrencies
-from shared.strings import get_number_in_frames
-from users.models import User
-from users.services import UsersService
-
-
-class CategoriesCache(type):
-    CATEGORIES_TABLE = "categories"
-
-    @classmethod
-    def get_categories(cls) -> list[Category]:
-        data = [Category(**item) for item in database.fetchall(cls.CATEGORIES_TABLE)]
-        return data
-
-    def __getattr__(cls, attr):
-        if attr == "CACHED_CATEGORIES":
-            data = cls.get_categories()
-            setattr(cls, attr, data)
-            return data
-        raise AttributeError(attr)
-
-
-class CategoriesService(metaclass=CategoriesCache):
-    CACHED_CATEGORIES: list[Category]
-
-    @classmethod
-    def get_by_name(cls, name: str) -> Optional[Category]:
-        for category in cls.CACHED_CATEGORIES:
-            if category.name == name:
-                return category
-        return None
-
-    @classmethod
-    def get_by_id(cls, id: int) -> Optional[Category]:
-        for category in cls.CACHED_CATEGORIES:
-            if category.id == id:
-                return category
-        return None
+from costs.domain import Cost, CostsError
+from db import database
+from equity import EquityCRUD
+from finances.domain import Currencies, Operations
+from shared.formatting import get_number_in_frames
+from users import User, UsersCRUD
 
 
 class CostsService:
-    __DATE_FROAMT = "%Y-%m-%d"
+    __FULL_DATE_FROAMT = "%Y-%m-%d"
     __MONTHLY_DATE_FROAMT = "%Y-%m"
-    __ANNUALLY_DATE_FROAMT = "%Y"
     __TABLE = "costs"
 
     def __init__(self, account_id: int) -> None:
-        self.__DATE_FROAMT = "%Y-%m-%d"
-        self.__MONTHLY_DATE_FROAMT = "%Y-%m"
-        self.__TABLE = "costs"
-        self._user: Optional[User] = UsersService.fetch_by_account_id(account_id)
+        self._user: Optional[User] = UsersCRUD.fetch_by_account_id(account_id)
         self._category: Optional[Category] = None
         self._date: Optional[date] = None
         self._text: Optional[str] = None
@@ -80,7 +41,7 @@ class CostsService:
             raise CostsError("Date is not selected")
 
         try:
-            self._date = datetime.strptime(text, self.__DATE_FROAMT)
+            self._date = datetime.strptime(text, self.__FULL_DATE_FROAMT)
         except ValueError:
             raise CostsError("Invalid date")
 
@@ -114,11 +75,15 @@ class CostsService:
             "category_id": self._category.id,
         }
         data: dict = database.insert(self.__TABLE, payload)
-        costs = Cost(**data)
+        cost = Cost(**data)
 
-        EquityService.update(costs)
+        EquityCRUD.update(
+            operation=Operations.SUBTRACT,
+            value=cost.value,
+            currency=cost.currency,
+        )
 
-        return Cost(**data)
+        return cost
 
     def process_confirmation(self, text: Optional[str]) -> bool:
         if not text or "Yes" not in text:
@@ -130,14 +95,14 @@ class CostsService:
     @classmethod
     def get_formatted_cost(cls, cost: Cost) -> str:
         category: Optional[Category] = CategoriesService.get_by_id(cost.category_id)
-        user = UsersService.fetch_by_id(cost.user_id)
+        user = UsersCRUD.fetch_by_id(cost.user_id)
 
         if not user:
             raise CostsError("⚠️ For some reason cost {cost.id} doesn't have user")
         if not category:
             raise CostsError("⚠️ For some reason cost {cost.id} doesn't have category")
 
-        currency_sign = "$" if cost.currency == DatabaseCurrencies.USD.value else ""
+        currency_sign = "$" if cost.currency == Currencies.get_database_value("USD") else ""
         cost_date = cost.date.strftime("%d-%m")
 
         return (

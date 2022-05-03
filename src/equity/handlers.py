@@ -1,21 +1,19 @@
 from telebot import types
 
-from authentication import only_for_members
-from config import bot
-from equity.services import EquityService
-from keyboards import default_keyboard
-from shared.equity import KeyboardButtons
-from shared.handlers import restart_handler, user_error_handler
-
-__all__ = ("equity",)
+from bot import bot
+from equity.domain import EquityGeneralMenu
+from equity.services import EquityCRUD
+from shared.domain import base_error_handler, restart_handler
+from shared.keyboards import default_keyboard
+from users import UsersService
 
 
-@bot.message_handler(regexp=rf"^{KeyboardButtons.EQUITY.value}")
+@bot.message_handler(regexp=rf"^{EquityGeneralMenu.EQUITY.value}")
 @restart_handler
-@user_error_handler
-@only_for_members
+@base_error_handler
+@UsersService.only_for_members
 def equity(m: types.Message):
-    text = EquityService.get_formatted()
+    text = EquityCRUD.get_formatted()
     bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),

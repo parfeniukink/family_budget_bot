@@ -2,19 +2,8 @@ from typing import Iterable
 
 from telebot import types
 
-from costs.models import Cost
-from costs.services import CategoriesService
-from keyboards import add_restart_button
-
-
-@add_restart_button
-def categories_keyboard() -> types.ReplyKeyboardMarkup:
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    for category in CategoriesService.CACHED_CATEGORIES:
-        markup.add(types.KeyboardButton(category.name))
-
-    return markup
+from costs.domain import Cost
+from shared.keyboards import add_restart_button
 
 
 @add_restart_button

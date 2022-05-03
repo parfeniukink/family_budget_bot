@@ -2,28 +2,31 @@ from datetime import datetime
 
 from telebot import types
 
-from analytics.errors import AnalyticsError
-from analytics.keyboards import (
-    AnalyticsDetailOptions,
+from analytics.domain import (
+    AnalyticsDetailLevels,
+    AnalyticsError,
+    AnalyticsGeneralMenu,
     AnalyticsOptions,
-    DetailReportOptions,
-    analytics_dates_detail_keyboard,
-    analytics_details_keyboard,
+    DetailReportExtraOptions,
+)
+from analytics.keyboards import (
+    analytics_detail_level_keyboard,
+    analytics_detailed_keyboard,
     analytics_keyboard,
 )
 from analytics.services import AnalitycsService
-from authentication import only_for_members
-from config import DEFAULT_SEND_SETTINGS, bot
-from costs.services import CategoriesService
-from keyboards import default_keyboard
-from shared.analytics import KeyboardButtons
-from shared.dates import exist_dates_keyboard
-from shared.handlers import restart_handler, user_error_handler
+from bot import bot
+from categories import CategoriesService
+from dates import exist_dates_keyboard
+from settings import DEFAULT_SEND_SETTINGS
+from shared.domain import base_error_handler, restart_handler
+from shared.keyboards import default_keyboard
+from users import UsersService
 
 __all__ = ("analytics",)
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def detailed_option_dispatcher(m: types.Message, month: str):
     no_such_category_error = AnalyticsError(f"Not such category 👉 {m.text}\nPlease use keyboard below")
@@ -32,7 +35,7 @@ def detailed_option_dispatcher(m: types.Message, month: str):
     if not category_name:
         raise no_such_category_error
 
-    if category_name == DetailReportOptions.ALL.value:
+    if category_name == DetailReportExtraOptions.ALL.value:
         report = AnalitycsService.get_monthly_detailed_report(month)
         for text in report:
             bot.send_message(
@@ -58,15 +61,15 @@ def detailed_option_dispatcher(m: types.Message, month: str):
         )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def monthly_dispatcher(m: types.Message, month: str):
-    if m.text not in AnalyticsDetailOptions.values():
+    if m.text not in AnalyticsDetailLevels.values():
         raise AnalyticsError()
 
     report = ""
 
-    if m.text == AnalyticsDetailOptions.BASIC.value:
+    if m.text == AnalyticsDetailLevels.BASIC.value:
         report = AnalitycsService.get_monthly_basic_report(month)
         for text in report:
             bot.send_message(
@@ -75,10 +78,10 @@ def monthly_dispatcher(m: types.Message, month: str):
                 text=text,
                 **DEFAULT_SEND_SETTINGS,
             )
-    elif m.text == AnalyticsDetailOptions.DETAILED.value:
+    elif m.text == AnalyticsDetailLevels.DETAILED.value:
         bot.send_message(
             m.chat.id,
-            reply_markup=analytics_details_keyboard(),
+            reply_markup=analytics_detailed_keyboard(),
             text="Now, please, select the category",
             **DEFAULT_SEND_SETTINGS,
         )
@@ -89,7 +92,7 @@ def monthly_dispatcher(m: types.Message, month: str):
         )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def by_month_callback(m: types.Message):
     try:
@@ -99,7 +102,7 @@ def by_month_callback(m: types.Message):
 
     bot.send_message(
         m.chat.id,
-        reply_markup=analytics_dates_detail_keyboard(),
+        reply_markup=analytics_detail_level_keyboard(),
         text="Select detail level:",
     )
     bot.register_next_step_handler_by_chat_id(
@@ -109,7 +112,7 @@ def by_month_callback(m: types.Message):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def by_year_callback(m: types.Message):
     if not m.text:
@@ -125,7 +128,7 @@ def by_year_callback(m: types.Message):
     )
 
 
-@user_error_handler
+@base_error_handler
 @restart_handler
 def analytics_dispatcher(m: types.Message):
     if m.text not in AnalyticsOptions.values():
@@ -158,10 +161,10 @@ def analytics_dispatcher(m: types.Message):
     )
 
 
-@bot.message_handler(regexp=rf"^{KeyboardButtons.ANALYTICS.value}")
-@user_error_handler
+@bot.message_handler(regexp=rf"^{AnalyticsGeneralMenu.ANALYTICS.value}")
+@base_error_handler
 @restart_handler
-@only_for_members
+@UsersService.only_for_members
 def analytics(m: types.Message):
     bot.send_message(
         m.chat.id,

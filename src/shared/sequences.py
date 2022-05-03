@@ -1,7 +1,7 @@
 from operator import getitem
 from typing import Generator, Hashable, Iterable, Sequence, TypeVar
 
-from shared.collections import Model
+from shared.domain import Model
 
 _Member = TypeVar("_Member", dict, Model)
 

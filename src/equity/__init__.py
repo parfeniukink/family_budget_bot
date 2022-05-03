@@ -1,2 +1,2 @@
-from equity.models import Equity  # noqa
-from equity.services import EquityService  # noqa
+from equity.domain import *  # noqa
+from equity.services import *  # noqa

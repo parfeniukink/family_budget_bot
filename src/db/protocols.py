@@ -1,6 +1,6 @@
 from typing import Any, ContextManager, Optional, Protocol
 
-from db.models import ConnectionData
+from db.domain import ConnectionData
 
 
 class Database(Protocol):

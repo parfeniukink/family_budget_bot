@@ -1,43 +1,40 @@
 # Family budget Telegram bot
 
+</br>
+
 ✅ This is a family budget bot, developerd for Telegram messanger
 
 ✅ Use it as collaborational tool to save costs and incomes
 
 ✅ Also, you can find pertty usefull monthly or annually analytics
 
-</br>
-
-## Setup the environment
 
 
-### Mandatory steps
+# Setup the environment
 
-#### Create environment configuration file based on `.env.example`
+### Create environment configuration file based on `.env.example`
 ```bash
 cp .env.example .env
 ```
 
-#### Complete next variables:
-**API_KEY** 👉 Telegram API key. Get it from [**BotFather**](https://t.me/botfather)
+### Install [pre-commit hooks](https://pre-commit.com/#install)
+> Note: Install pre-commit tool before
+```bash
+pre-commit install
+```
 
-**POSTGRES_HOST** 👉 `postgres` if you use Docker / `localhost` if you use native setup
+### Complete next variables:
 
-**POSTGRES_PORT** 👉 database poert. Default - `5432`. Use `docker-compose.dev.yaml` as far you need open ports for your application.
-
-**POSTGRES_USER** 👉 database user. Default - `postgres`
-
-**POSTGRES_PASSWORD** 👉 database password. Default - `postgres`
-
-**POSTGRES_DB** 👉 database name. Default - `family_budget`
-
-**USERS_ACL** 👉 the list of Telegram account ids. Set it not to show your data to other people. ***Security reasons***
+| Key | Default value | Description |
+| --- | ------------- | ----------- |
+| `COMPOSE_FILE` | `docker-compose.yaml` | Docker-compose file you would like to use. Use `docker-compose.yaml` for production and `docker-compose.dev.yaml` for development
+| `API_KEY` | - | Telegram API key. Get it from [**BotFather**](https://t.me/botfather) |
+| `DATABASE_URL` | `postgresql://postgres:postgres@postgres:5432/family_budget` | Database URL that should match pattern: `db_engine://username:password@host:port/db_name` </br> **Note:** *currenctly Bot allowes you to use only `postgresql` database engine*
+| `USERS_ACL` | - | The list of Telegram account ids. Set it not to show your data to other people. </br> **Note:** 99% of features allowed only for bot members you pass throw this variable |
 
 
 
-</br>
-
-## Setup
+# Setup
 
 ### with Docker
 
@@ -48,11 +45,10 @@ cp .env.example .env
 docker-compose build
 ```
 
-</br>
 
 ### with NO Docker
 
-##### Install dependencies with Poetry & activate virtual environment
+#### Install dependencies with Poetry & activate virtual environment
 🔗  [Poetry official page](https://python-poetry.org)
 ```bash
 # Install poetry
@@ -63,10 +59,9 @@ poetry install
 poetry shell
 ```
 
-</br>
 
 
-## Usage
+# Usage
 
 ### With Docker
 
@@ -79,9 +74,6 @@ docker-compose up -d
 > Note: database volume is static for the app. It means, that after removing any container your data will not be removed.
 
 
-
-</br>
-
 ### With NO Docker
 ```bash
 # Run the bot
@@ -89,11 +81,13 @@ python src/run.py
 ```
 </br>
 
-## Additional information
 
-### Creating database dump cronjobs
 
-##### Create a job on the hosting server
+# Additional information
+
+## Creating database dump cronjobs
+
+#### Create a job on the hosting server
 
 1. Connect to the server via SSH
 ```bash
@@ -110,7 +104,7 @@ crontab -e
 *   */5   *   *   *   docker exec family_budget_bot_postgres pg_dump -U postgres -d family_budget > /root/family_budget_bot/dump.sql
 ```
 
-##### Create a job on local UNIX machine
+#### Create a job on local UNIX machine
 
 1. Open crontab editor
 ```bash
@@ -147,22 +141,22 @@ Ingest data into database
 docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ```
 
-## Images
-#### Start the bot
+# Images
+### Start the bot
 <img width="1382" alt="image" src="https://user-images.githubusercontent.com/45270625/164975013-ed323070-ae0f-464f-8b45-22bb4960ca5e.png">
 
-#### Monthly analytics
+### Monthly analytics
 <img width="1382" alt="image" src="https://user-images.githubusercontent.com/45270625/164975082-bba2ee53-877a-44d7-b6e8-6cefbb84ac42.png">
 
-#### Adding costs process
+### Adding costs process
 <img width="1359" alt="image" src="https://user-images.githubusercontent.com/45270625/164975104-f7ebf517-7a78-4979-8b57-461b0d7e735f.png">
 
-#### Removing costs process
+### Removing costs process
 <img width="1150" alt="image" src="https://user-images.githubusercontent.com/45270625/165398291-454ca4fd-c4e2-41b0-bdd1-b373be897bf0.png">
 
-#### Equity
+### Equity
 <img width="1362" alt="image" src="https://user-images.githubusercontent.com/45270625/165388913-ed52bffb-3d94-4f69-a93b-cfbd97b32c25.png">
 
-#### Flexible configurations
+### Flexible configurations
 <img width="1146" alt="image" src="https://user-images.githubusercontent.com/45270625/165398121-a9191fad-9946-4467-97af-61cf62ee8bcd.png">
 

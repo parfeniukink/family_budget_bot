@@ -144,7 +144,7 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 # Images
 
 ### Start the bot
-![image](https://user-images.githubusercontent.com/45270625/166680780-4c0e004a-929b-438b-aaff-6b39052b1197.png)
+<image src="https://user-images.githubusercontent.com/45270625/166680780-4c0e004a-929b-438b-aaff-6b39052b1197.png" width="400" height="800"/>
 
 
 ### Adding costs process

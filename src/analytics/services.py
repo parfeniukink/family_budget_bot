@@ -36,14 +36,17 @@ class AnalitycsService:
             return text
 
         total_costs_sum: Decimal = sum(costs)  # type: ignore
+        sign = "$" if costs[0].currency == Currencies.get_database_value("USD") else ""
 
         for id, costs_group in cls.__costs_by_category(costs):
             category: Category = categories_by_id[id]
             total_costs: Decimal = sum(costs_group)  # type: ignore
-            text += "".join(("\n", LINE_ITEM.format(key=category.name, value=get_number_in_frames((total_costs)))))
+            text += "".join(
+                ("\n", LINE_ITEM.format(key=category.name, value=get_number_in_frames((total_costs))), sign)
+            )
 
             percent = (total_costs * Decimal("100") / total_costs_sum).quantize(Decimal("0.1"))
-            text += "".join((INDENTION, ITALIC.format(text=f"({percent})")))
+            text += "".join((INDENTION, ITALIC.format(text=f"({percent}%)")))
 
         text += "".join(
             [
@@ -52,6 +55,7 @@ class AnalitycsService:
                     key=BOLD.format(text="Total costs"),
                     value=get_number_in_frames(total_costs_sum),
                 ),
+                sign,
             ]
         )
 
@@ -65,6 +69,8 @@ class AnalitycsService:
 
         if not costs:
             return report
+
+        sign = "$" if costs[0].currency == Currencies.get_database_value("USD") else ""
 
         for id, costs_group in cls.__costs_by_category(costs):
             category: Category = categories_by_id[id]
@@ -80,6 +86,7 @@ class AnalitycsService:
                             key=f"{cost_date}  {cost.name}",
                             value=get_number_in_frames(cost.value),
                         ),
+                        sign,
                     )
                 )
 
@@ -171,7 +178,7 @@ class AnalitycsService:
 
         report.extend(
             cls.__get_detailed_costs(
-                categories_by_id, costs.get(Currencies.get_database_value("USD")), Currencies.UAH.value
+                categories_by_id, costs.get(Currencies.get_database_value("USD")), Currencies.USD.value
             )
         )
 

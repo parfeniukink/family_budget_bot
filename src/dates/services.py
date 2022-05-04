@@ -81,4 +81,4 @@ class DatesService(metaclass=DatesCache):
             DatesCache.set_dates()
             data: list[str] = cls.__get_monthes_in_range(cls.FIRST_DATE, cls.LAST_DATE, date_format)
 
-        return without_duplicates(reversed(data))
+        return without_duplicates(data)

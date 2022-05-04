@@ -15,7 +15,7 @@ INCOME_GET_NO_USER_ERROR = "For some reason there is not user in database relate
 INCOME_DETAILED_ITEM_MESSAGE = "".join(
     (
         "{fdate}   {user}",
-        "|",
+        " | ",
         LINE_ITEM.format(key="{income_name}", value="{income_value}"),
         "{sign}\n",
     )

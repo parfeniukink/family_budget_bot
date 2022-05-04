@@ -137,7 +137,11 @@ class IncomesService:
             fdate = income.date.strftime("%d")
 
             result += INCOME_DETAILED_ITEM_MESSAGE.format(
-                fdate=fdate, user=user.full_name, income_name=income.name, income_value=income.value, sign=sign
+                fdate=fdate,
+                user=user.full_name,
+                income_name=income.name,
+                income_value=get_number_in_frames(income.value),
+                sign=sign,
             )
 
         return result

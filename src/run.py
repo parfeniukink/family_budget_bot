@@ -6,6 +6,8 @@ from loguru import logger
 
 from analytics.handlers import *  # noqa
 from bot import bot
+from costs.handlers import *  # noqa
+from shared.handlers import *  # noqa
 from startup.handlers import *  # noqa
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)

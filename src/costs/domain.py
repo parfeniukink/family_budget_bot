@@ -2,12 +2,9 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional, Union
 
-from shared.domain import BaseError, Enum, Model
-
-
-class CostsGeneralMenu(Enum):
-    ADD_COST = "Add costs 💵"
-    DELETE_COST = "Delete costs 💵"
+from categories.domain import Category
+from shared.domain import BaseError, Enum, Model, random_uuid
+from storages import Storage
 
 
 class CostsError(BaseError):
@@ -58,3 +55,35 @@ class Cost(Model):
 
     def fdate(self, date_format="%Y-%m-%d") -> str:
         return self.date.strftime(date_format)
+
+
+class CostsGeneralMenu(Enum):
+    ADD_COST = "Add costs 💵"
+    DELETE_COST = "Delete costs 💵"
+
+
+class ExtraCallbackData(Enum):
+    DEL_MONTH_SELECTED = random_uuid()
+    ADD_MONTH_SELECTED = random_uuid()
+    DEL_CATEGORY_SELECTED = random_uuid()
+    ADD_CATEGORYADD_SELECTED = random_uuid()
+    COST_ID_SELECTED = random_uuid()
+    DEL_CONFIRMATION_SELECTED = random_uuid()
+    ADD_CONFIRMATION_SELECTED = random_uuid()
+
+
+class CostsStorage(Storage):
+    __slots__ = "costs", "category", "delete_id"
+
+    def __init__(self, account_id: int) -> None:
+        if getattr(self, "__initialized", False):
+            return
+
+        super().__init__(account_id)
+        self.trash_messages: set[int] = set()
+        self.value: Optional[str] = None
+        self.description: Optional[str] = None
+        self.date: Optional[date] = None
+        self.costs: Optional[list[Cost]] = None
+        self.category: Optional[Category] = None
+        self.delete_id: Optional[str] = None

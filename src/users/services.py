@@ -6,7 +6,7 @@ from telebot import types
 from db import DatabaseError, database
 from settings import ALLOWED_USER_ACCOUNT_IDS
 from shared.domain import BaseError
-from users.domain import User
+from users.domain import User, UsersError
 
 __all__ = ("UsersService", "UsersCRUD")
 
@@ -37,9 +37,13 @@ class UsersCRUD:
         return User(**data) if data else None
 
     @classmethod
-    def fetch_by_account_id(cls, account_id: int) -> Optional[User]:
+    def fetch_by_account_id(cls, account_id: int) -> User:
         data = database.fetch(cls.USERS_TABLE, "account_id", account_id)
-        return User(**data) if data else None
+
+        if not data:
+            raise UsersError(f"Nu such user with id {account_id}")
+
+        return User(**data)
 
     @classmethod
     def save_user(cls, m: types.Message) -> tuple[User, bool]:

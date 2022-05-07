@@ -11,12 +11,8 @@ from categories import categories_keyboard
 def analytics_periods_keyboard():
     keyboard = [
         [
-            types.InlineKeyboardButton(
-                text=AnalyticsOptions.MONTHLY.value.name, callback_data=AnalyticsOptions.MONTHLY.value.callback_data
-            ),
-            types.InlineKeyboardButton(
-                text=AnalyticsOptions.ANNUALLY.value.name, callback_data=AnalyticsOptions.ANNUALLY.value.callback_data
-            ),
+            types.InlineKeyboardButton(text=item.name, callback_data=item.callback_data)
+            for item in AnalyticsOptions.values()
         ]
     ]
     return types.InlineKeyboardMarkup(keyboard)
@@ -25,9 +21,9 @@ def analytics_periods_keyboard():
 def analytics_detail_levels_keyboard() -> types.InlineKeyboardMarkup:
     keyboard = [
         [
-            types.InlineKeyboardButton(text=item.value.name, callback_data=item.value.callback_data),
+            types.InlineKeyboardButton(text=item.name, callback_data=item.callback_data),
         ]
-        for item in AnalyticsDetailLevels
+        for item in AnalyticsDetailLevels.values()
     ]
     return types.InlineKeyboardMarkup(keyboard)
 

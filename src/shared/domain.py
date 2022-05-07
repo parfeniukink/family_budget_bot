@@ -2,7 +2,7 @@ from enum import Enum as _Enum
 from enum import IntEnum as _IntEnum
 from enum import unique
 from functools import wraps
-from typing import Any, Callable, Generator, Iterable, Optional, Union
+from typing import Callable, Generator, Iterable, Optional, Union
 from uuid import uuid4
 
 from loguru import logger
@@ -46,6 +46,8 @@ def base_error_handler(coro: Callable) -> Callable:
 
     @wraps(coro)
     async def inner(m: Union[types.Message, types.CallbackQuery], *args, **kwargs) -> Optional[types.Message]:
+        from shared.keyboards import default_keyboard
+
         regular_message = isinstance(m, types.Message)
         chat_id = m.chat.id if regular_message else m.message.chat.id
 
@@ -53,14 +55,12 @@ def base_error_handler(coro: Callable) -> Callable:
             return await coro(m, *args, **kwargs)
         except BaseError as err:
             logger.error(err)
+            message = f"<b>⚠️ Error:</b>\n\n{err}"
             if not regular_message:
-                return await CallbackMessages.edit(q=m, text=f"<b>⚠️ Error:</b>\n\n{err}")
+                return await CallbackMessages.edit(q=m, text=message)
             else:
                 return await bot.send_message(
-                    chat_id,
-                    reply_markup=default_keyboard(),
-                    text=f"<b>⚠️ Error:</b>\n\n{err}",
-                    **DEFAULT_SEND_SETTINGS,
+                    chat_id, reply_markup=default_keyboard(), text=message, **DEFAULT_SEND_SETTINGS
                 )
 
     return inner
@@ -101,7 +101,6 @@ def _uuid_facory() -> Generator:
 
         if item not in items:
             items.add(item)
-            logger.debug("New one generated")
             yield item
         else:
             continue
@@ -119,18 +118,6 @@ class CallbackItem(Model):
     callback_data: str = Field(default_factory=random_uuid)
 
 
-class InlineKeyboardEnum(Enum):
-    @classmethod
-    def names(cls: Iterable) -> list:
-        return [i.value.token for i in cls]
-
-    @classmethod
-    def callback_data_all(cls: Iterable) -> list:
-        return [i.value.callback_data for i in cls]
-
-    @classmethod
-    def get_by_callback_data(cls: Iterable, callback_data: str) -> Any:
-        for i in cls:
-            if i.value.callback_data == callback_data:
-                return i
-        raise BaseError(f"No such callback_data {callback_data} in {cls}")
+class ConfirmationOptions(Enum):
+    YES = "✅ Yes"
+    NO = "❌ No"

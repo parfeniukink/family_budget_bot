@@ -4,6 +4,7 @@ from typing import Callable
 from telebot import types
 
 from settings import RESTART_BUTTON_TEXT
+from shared.domain import ConfirmationOptions
 
 
 def add_restart_button(func: Callable) -> Callable:
@@ -40,10 +41,14 @@ def default_keyboard() -> types.ReplyKeyboardMarkup:
     return markup
 
 
-@add_restart_button
-def confirmation_keyboard() -> types.ReplyKeyboardMarkup:
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(types.InlineKeyboardButton("✅ Yes"))
-    markup.add(types.InlineKeyboardButton("❌ No"))
+def confirmation_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
+    keyboard = [
+        [
+            types.InlineKeyboardButton(text=item, callback_data="".join((callback_data, item))),
+        ]
+        for item in ConfirmationOptions.values()
+    ]
+
+    markup = types.InlineKeyboardMarkup(keyboard)
 
     return markup

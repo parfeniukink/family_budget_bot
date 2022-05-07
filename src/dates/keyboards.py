@@ -4,22 +4,26 @@ from telebot import types
 
 from configurations import Configuration, Configurations, ConfigurationsService
 from dates.services import DatesService
-from shared.keyboards import add_restart_button
 
 
-@add_restart_button
-def dates_keyboard() -> types.ReplyKeyboardMarkup:
+def dates_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
     DATES_KEYBOARD_AMOUNT: Configuration = ConfigurationsService.get_by_name(
         Configurations.KEYBOARD_DATES_AMOUNT.name.lower()
     )
 
     dates = [date.today() - timedelta(days=i) for i in range(int(DATES_KEYBOARD_AMOUNT.value))]
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    for d in dates:
-        markup.add(types.KeyboardButton(str(d)))
+    keyboard = [
+        [
+            types.InlineKeyboardButton(
+                text=str(fdate),
+                callback_data="".join((callback_data, str(fdate))),
+            )
+        ]
+        for fdate in dates
+    ]
 
-    return markup
+    return types.InlineKeyboardMarkup(keyboard)
 
 
 def exist_dates_keyboard(*_, date_format: str = "%Y-%m", callback_data: str) -> types.InlineKeyboardMarkup:

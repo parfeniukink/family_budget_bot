@@ -1,6 +1,6 @@
 from typing import Optional
 
-from shared.domain import BaseError, CallbackItem, Enum, InlineKeyboardEnum, random_uuid
+from shared.domain import BaseError, CallbackItem, Enum, random_uuid
 from storages import Storage
 
 
@@ -20,7 +20,7 @@ class ExtraCallbackData(Enum):
     CATEGORY_SELECTED = random_uuid()
 
 
-class AnalyticsOptions(InlineKeyboardEnum):
+class AnalyticsOptions(Enum):
     MONTHLY = CallbackItem(name="Monthly")
     ANNUALLY = CallbackItem(name="Annually")
 
@@ -30,7 +30,7 @@ class AnalyticsDetailLevels(Enum):
     DETAILED = CallbackItem(name="Detailed")
 
 
-class DetailReportExtraOptions(InlineKeyboardEnum):
+class DetailReportExtraOptions(Enum):
     ALL = CallbackItem(name="🚛 All")
 
 
@@ -45,6 +45,5 @@ class AnalyticsStorage(Storage):
 
         super().__init__(account_id)
         self.option: Optional[AnalyticsOptions] = None
-        self.category: Optional[str] = None
         self.date: Optional[str] = None
         self.detail_level: Optional[AnalyticsDetailLevels] = None

@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Callable, Optional
 
 from telebot import types
@@ -12,16 +13,17 @@ __all__ = ("UsersService", "UsersCRUD")
 
 class UsersService:
     @staticmethod
-    def only_for_members(func) -> Callable:
+    def only_for_members(coro: Callable) -> Callable:
         """
         Check if user id is present in the allowed list.
         Use as decorator for handlers
         """
 
-        def inner(m: types.Message, *args, **kwargs):
+        @wraps(coro)
+        async def inner(m: types.Message, *args, **kwargs):
             if str(m.from_user.id) not in ALLOWED_USER_ACCOUNT_IDS:
                 raise BaseError("Sorry, you have not access to this Bot")
-            return func(m, *args, **kwargs)
+            return await coro(m, *args, **kwargs)
 
         return inner
 

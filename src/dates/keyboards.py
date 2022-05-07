@@ -22,11 +22,9 @@ def dates_keyboard() -> types.ReplyKeyboardMarkup:
     return markup
 
 
-@add_restart_button
-def exist_dates_keyboard(date_format: str = "%Y-%m") -> types.ReplyKeyboardMarkup:
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    for fdate in DatesService.get_formatted_dates(date_format):
-        markup.add(types.KeyboardButton(fdate))
-
-    return markup
+def exist_dates_keyboard(*_, date_format: str = "%Y-%m", callback_data: str) -> types.InlineKeyboardMarkup:
+    keyboard = [
+        [types.InlineKeyboardButton(text=fdate, callback_data="".join((callback_data, fdate)))]
+        for fdate in DatesService.get_formatted_dates(date_format)
+    ]
+    return types.InlineKeyboardMarkup(keyboard)

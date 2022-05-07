@@ -167,20 +167,14 @@ class AnalitycsService:
             "id",
         )  # type: ignore
 
-        report = []
-        report.append(BOLD.format(text=AnalyticsGeneralMenu.ANALYTICS.value))
-
-        report.extend(
-            cls.__get_detailed_costs(
+        report = [
+            *cls.__get_detailed_costs(
                 categories_by_id, costs.get(Currencies.get_database_value("UAH")), Currencies.UAH.value
-            )
-        )
-
-        report.extend(
-            cls.__get_detailed_costs(
+            ),
+            *cls.__get_detailed_costs(
                 categories_by_id, costs.get(Currencies.get_database_value("USD")), Currencies.USD.value
-            )
-        )
+            ),
+        ]
 
         if not category:
             cached_users: dict[int, User] = {}

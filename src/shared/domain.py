@@ -2,13 +2,15 @@ from enum import Enum as _Enum
 from enum import IntEnum as _IntEnum
 from enum import unique
 from functools import wraps
-from typing import Callable, Iterable, Optional
+from typing import Any, Callable, Generator, Iterable, Optional, Union
+from uuid import uuid4
 
 from loguru import logger
 from pydantic import BaseModel, Extra
+from pydantic.fields import Field
 from telebot import types
 
-from bot import bot
+from bot import CallbackMessages, bot
 from settings import DEFAULT_SEND_SETTINGS, RESTART_BUTTON_TEXT
 from shared.keyboards import default_keyboard
 from shared.messages import ABORTED
@@ -20,40 +22,46 @@ class BaseError(Exception):
         super().__init__(message, *args, **kwargs)
 
 
-def restart_handler(func):
+def restart_handler(coro: Callable):
     """
     Handler to cover any handler or callback for aboarting if `/restart` was entered
     Use only for functions with first Message parameter
     """
 
-    @wraps(func)
-    def inner(m: types.Message, *args, **kwargs):
+    @wraps(coro)
+    async def inner(m: types.Message, *args, **kwargs):
         if m.text == RESTART_BUTTON_TEXT:
-            bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=ABORTED)
+            await bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=ABORTED)
         else:
-            return func(m, *args, **kwargs)
+            return await coro(m, *args, **kwargs)
 
     return inner
 
 
-def base_error_handler(func) -> Callable:
+def base_error_handler(coro: Callable) -> Callable:
     """
     This decorator could be used only for handlers.
-    m: types.Message is mandatory first argument
+    m: Union[types.Message, types.CallbackQuery] is mandatory first argument
     """
 
-    @wraps(func)
-    def inner(m: types.Message, *args, **kwargs) -> None:
+    @wraps(coro)
+    async def inner(m: Union[types.Message, types.CallbackQuery], *args, **kwargs) -> Optional[types.Message]:
+        regular_message = isinstance(m, types.Message)
+        chat_id = m.chat.id if regular_message else m.message.chat.id
+
         try:
-            return func(m, *args, **kwargs)
+            return await coro(m, *args, **kwargs)
         except BaseError as err:
             logger.error(err)
-            bot.send_message(
-                m.chat.id,
-                reply_markup=default_keyboard(),
-                text=f"<b>⚠️ Error:</b>\n\n{err}",
-                **DEFAULT_SEND_SETTINGS,
-            )
+            if not regular_message:
+                return await CallbackMessages.edit(q=m, text=f"<b>⚠️ Error:</b>\n\n{err}")
+            else:
+                return await bot.send_message(
+                    chat_id,
+                    reply_markup=default_keyboard(),
+                    text=f"<b>⚠️ Error:</b>\n\n{err}",
+                    **DEFAULT_SEND_SETTINGS,
+                )
 
     return inner
 
@@ -83,3 +91,46 @@ class Model(BaseModel):
         use_enum_values = True
         allow_population_by_field_name = True
         validate_assignment = True
+
+
+def _uuid_facory() -> Generator:
+    items = set()
+
+    while True:
+        item = str(uuid4())
+
+        if item not in items:
+            items.add(item)
+            logger.debug("New one generated")
+            yield item
+        else:
+            continue
+
+
+uuid_facory = _uuid_facory()
+
+
+def random_uuid() -> str:
+    return next(uuid_facory)
+
+
+class CallbackItem(Model):
+    name: str
+    callback_data: str = Field(default_factory=random_uuid)
+
+
+class InlineKeyboardEnum(Enum):
+    @classmethod
+    def names(cls: Iterable) -> list:
+        return [i.value.token for i in cls]
+
+    @classmethod
+    def callback_data_all(cls: Iterable) -> list:
+        return [i.value.callback_data for i in cls]
+
+    @classmethod
+    def get_by_callback_data(cls: Iterable, callback_data: str) -> Any:
+        for i in cls:
+            if i.value.callback_data == callback_data:
+                return i
+        raise BaseError(f"No such callback_data {callback_data} in {cls}")

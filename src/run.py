@@ -1,26 +1,35 @@
+import asyncio
+import warnings
 from time import sleep
 
 from loguru import logger
 
 from analytics.handlers import *  # noqa
 from bot import bot
-from configurations.handlers import *  # noqa
-from costs.handlers import *  # noqa
-from equity.handlers import *  # noqa
-from incomes.handlers import *  # noqa
 from startup.handlers import *  # noqa
 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-def start_bot():
+
+async def start_bot():
     try:
         logger.info("Bot started 🚀")
-        bot.polling(none_stop=True, interval=0)
+        await bot.polling(none_stop=True, interval=0)
     except Exception as err:
         logger.error(err)
         logger.error("🔴 Bot is down.\nRestarting...")
         logger.info("Sleeping for 30 seconds")
-        sleep(30)
-        start_bot()
+        sleep(10)
+        await start_bot()
 
 
-start_bot()
+async def integrations_background():
+    while True:
+        await asyncio.sleep(300)
+        logger.debug("Integrations engine")
+
+
+loop = asyncio.get_event_loop()
+tasks = [start_bot(), integrations_background()]
+results = loop.run_until_complete(asyncio.gather(*tasks))
+loop.close()

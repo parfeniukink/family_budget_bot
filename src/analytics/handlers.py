@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from loguru import logger
 from telebot import types
 
 from analytics.domain import (
@@ -7,157 +6,137 @@ from analytics.domain import (
     AnalyticsError,
     AnalyticsGeneralMenu,
     AnalyticsOptions,
+    AnalyticsStorage,
     DetailReportExtraOptions,
+    ExtraCallbackData,
 )
 from analytics.keyboards import (
     analytics_detail_level_keyboard,
-    analytics_detailed_keyboard,
-    analytics_keyboard,
+    analytics_detail_levels_keyboard,
+    analytics_periods_keyboard,
 )
 from analytics.services import AnalitycsService
-from bot import bot
+from bot import CallbackMessages, bot
 from categories import CategoriesService
 from dates import exist_dates_keyboard
 from settings import DEFAULT_SEND_SETTINGS
 from shared.domain import base_error_handler, restart_handler
-from shared.keyboards import default_keyboard
+from shared.messages import MESSAGE_DEPRICATED
 from users import UsersService
 
 __all__ = ("analytics",)
 
 
+@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.CATEGORY_SELECTED.value))
 @base_error_handler
-@restart_handler
-def detailed_option_dispatcher(m: types.Message, month: str):
-    no_such_category_error = AnalyticsError(f"Not such category 👉 {m.text}\nPlease use keyboard below")
-    category_name = m.text
+async def category_selected_callback_query(q: types.CallbackQuery):
+    logger.debug("Category selected callback query handler")
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
 
-    if not category_name:
-        raise no_such_category_error
+    if storage.option is not AnalyticsOptions.MONTHLY:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
+    if storage.detail_level is not AnalyticsDetailLevels.DETAILED:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
+    if not storage.date:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
+
+    category_name = q.data.replace(ExtraCallbackData.CATEGORY_SELECTED.value, "")
+
+    await CallbackMessages.delete(q)
 
     if category_name == DetailReportExtraOptions.ALL.value:
-        report = AnalitycsService.get_monthly_detailed_report(month)
-        for text in report:
-            bot.send_message(
-                m.chat.id,
-                reply_markup=default_keyboard(),
-                text=text,
-                **DEFAULT_SEND_SETTINGS,
-            )
-        return
-
-    if category_name not in {c.name for c in CategoriesService.CACHED_CATEGORIES}:
-        raise no_such_category_error
-
-    category = CategoriesService.get_by_name(category_name)
-    report = AnalitycsService.get_monthly_detailed_report(month, category)
-
-    for text in report:
-        bot.send_message(
-            m.chat.id,
-            reply_markup=default_keyboard(),
-            text=text,
-            **DEFAULT_SEND_SETTINGS,
-        )
+        reports = AnalitycsService.get_monthly_detailed_report(storage.date)
+        for report in reports:
+            await bot.send_message(q.message.chat.id, text=report, **DEFAULT_SEND_SETTINGS)
+    else:
+        category = CategoriesService.get_by_name(category_name)
+        reports = AnalitycsService.get_monthly_detailed_report(storage.date, category)
+        for report in reports:
+            await bot.send_message(q.message.chat.id, text=report, **DEFAULT_SEND_SETTINGS)
 
 
+@bot.callback_query_handler(func=lambda c: c.data == AnalyticsDetailLevels.DETAILED.value.callback_data)
 @base_error_handler
-@restart_handler
-def monthly_dispatcher(m: types.Message, month: str):
-    if m.text not in AnalyticsDetailLevels.values():
-        raise AnalyticsError()
+async def detail_level_selected_callback_query(q: types.CallbackQuery):
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
 
-    report = ""
+    if storage.option is not AnalyticsOptions.MONTHLY:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
 
-    if m.text == AnalyticsDetailLevels.BASIC.value:
-        report = AnalitycsService.get_monthly_basic_report(month)
-        for text in report:
-            bot.send_message(
-                m.chat.id,
-                reply_markup=default_keyboard(),
-                text=text,
-                **DEFAULT_SEND_SETTINGS,
-            )
-    elif m.text == AnalyticsDetailLevels.DETAILED.value:
-        bot.send_message(
-            m.chat.id,
-            reply_markup=analytics_detailed_keyboard(),
-            text="Now, please, select the category",
-            **DEFAULT_SEND_SETTINGS,
-        )
-        bot.register_next_step_handler_by_chat_id(
-            chat_id=m.chat.id,
-            callback=detailed_option_dispatcher,
-            month=month,
-        )
+    storage.detail_level = AnalyticsDetailLevels.DETAILED
+    markup = analytics_detail_level_keyboard(callback_data=ExtraCallbackData.CATEGORY_SELECTED.value)
+
+    await CallbackMessages.edit(q=q, text="Please select the category", reply_markup=markup)
 
 
+@bot.callback_query_handler(func=lambda c: c.data == AnalyticsDetailLevels.BASIC.value.callback_data)
 @base_error_handler
-@restart_handler
-def by_month_callback(m: types.Message):
-    try:
-        datetime.strptime(m.text or "", "%Y-%m")
-    except ValueError:
-        raise AnalyticsError(f"Date <b>{m.text}</b> doesn't match format YEAR-MONTH")
+async def basic_level_selected_callback_query(q: types.CallbackQuery):
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
 
-    bot.send_message(
-        m.chat.id,
-        reply_markup=analytics_detail_level_keyboard(),
-        text="Select detail level:",
-    )
-    bot.register_next_step_handler_by_chat_id(
-        chat_id=m.chat.id,
-        callback=monthly_dispatcher,
-        month=m.text,
+    if storage.option is not AnalyticsOptions.MONTHLY:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
+    if not storage.date:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
+
+    storage.detail_level = AnalyticsDetailLevels.BASIC
+    new_message = "".join((m for m in AnalitycsService.get_monthly_basic_report(storage.date)))
+
+    await CallbackMessages.edit(q=q, text=new_message)
+
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.MONTH_SELECTED.value))
+@base_error_handler
+async def month_selected_callback_query(q: types.CallbackQuery):
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
+    if storage.option is not AnalyticsOptions.MONTHLY:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
+
+    storage.date = q.data.replace(ExtraCallbackData.MONTH_SELECTED.value, "")
+
+    await CallbackMessages.edit(
+        q=q,
+        text="Select detail level",
+        reply_markup=analytics_detail_levels_keyboard(),
     )
 
 
+@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.YEAR_SELECTED.value))
 @base_error_handler
-@restart_handler
-def by_year_callback(m: types.Message):
-    if not m.text:
-        raise AnalyticsError("Year is not selected")
+async def year_selected_callback_query(q: types.CallbackQuery):
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
+    if storage.option is not AnalyticsOptions.ANNUALLY:
+        raise AnalyticsError(MESSAGE_DEPRICATED)
 
-    text = AnalitycsService.get_annyally_report(m.text)
+    date = q.data.replace(ExtraCallbackData.YEAR_SELECTED.value, "")
+    new_message = AnalitycsService.get_annyally_report(date)
 
-    bot.send_message(
-        m.chat.id,
-        reply_markup=default_keyboard(),
-        text=text,
-        **DEFAULT_SEND_SETTINGS,
+    await CallbackMessages.edit(q=q, text=new_message)
+
+
+@bot.callback_query_handler(func=lambda c: c.data == AnalyticsOptions.MONTHLY.value.callback_data)
+@base_error_handler
+async def monthly_dispatcher(q: types.CallbackQuery):
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
+    storage.option = AnalyticsOptions.MONTHLY
+
+    await CallbackMessages.edit(
+        q=q,
+        text="Select month from the list",
+        reply_markup=exist_dates_keyboard(date_format="%Y-%m", callback_data=ExtraCallbackData.MONTH_SELECTED.value),
     )
 
 
+@bot.callback_query_handler(func=lambda c: c.data == AnalyticsOptions.ANNUALLY.value.callback_data)
 @base_error_handler
-@restart_handler
-def analytics_dispatcher(m: types.Message):
-    if m.text not in AnalyticsOptions.values():
-        raise AnalyticsError()
+async def annually_dispatcher(q: types.CallbackQuery):
+    storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
+    storage.option = AnalyticsOptions.ANNUALLY
 
-    callback = None
-    keyboard = None
-    option = None
-
-    if m.text == AnalyticsOptions.BY_MONTH.value:
-        option = AnalyticsOptions.BY_MONTH.value
-        callback = by_month_callback
-        keyboard = exist_dates_keyboard()
-    elif m.text == AnalyticsOptions.BY_YEAR.value:
-        option = AnalyticsOptions.BY_YEAR.value
-        callback = by_year_callback
-        keyboard = exist_dates_keyboard(date_format="%Y")
-
-    if not all((callback, keyboard, option)):
-        raise AnalyticsError("Keyboard or callback not found")
-
-    bot.send_message(
-        m.chat.id,
-        reply_markup=keyboard,
-        text=f"Use option {option}\nNow, please, select the date 📅",
-    )
-    bot.register_next_step_handler_by_chat_id(
-        chat_id=m.chat.id,
-        callback=callback or (lambda _: None),
+    await CallbackMessages.edit(
+        q=q,
+        text="Select year from the list",
+        reply_markup=exist_dates_keyboard(date_format="%Y", callback_data=ExtraCallbackData.YEAR_SELECTED.value),
     )
 
 
@@ -165,13 +144,9 @@ def analytics_dispatcher(m: types.Message):
 @base_error_handler
 @restart_handler
 @UsersService.only_for_members
-def analytics(m: types.Message):
-    bot.send_message(
+async def analytics(m: types.Message):
+    await bot.send_message(
         m.chat.id,
-        reply_markup=analytics_keyboard(),
+        reply_markup=analytics_periods_keyboard(),
         text="Choose option",
-    )
-    bot.register_next_step_handler_by_chat_id(
-        chat_id=m.chat.id,
-        callback=analytics_dispatcher,
     )

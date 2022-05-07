@@ -16,6 +16,8 @@ RESTART = "Keyboard restarted"
 
 ABORTED = "⚠️ Aborted"
 
+MESSAGE_DEPRICATED = "This message is depricated"
+
 CATEGORY_SELECTED = "\n".join(
     (LINE_ITEM.format(key="✅ Category", value="{category} selected"), "Now, please, select the date 📅 from the list")
 )

@@ -1,4 +1,3 @@
-from functools import wraps
 from typing import Callable, Optional
 
 from telebot import types
@@ -6,24 +5,23 @@ from telebot import types
 from db import DatabaseError, database
 from settings import ALLOWED_USER_ACCOUNT_IDS
 from shared.domain import BaseError
-from users.domain import User, UsersError
+from users.domain import User
 
 __all__ = ("UsersService", "UsersCRUD")
 
 
 class UsersService:
     @staticmethod
-    def only_for_members(coro: Callable) -> Callable:
+    def only_for_members(func) -> Callable:
         """
         Check if user id is present in the allowed list.
         Use as decorator for handlers
         """
 
-        @wraps(coro)
-        async def inner(m: types.Message, *args, **kwargs):
+        def inner(m: types.Message, *args, **kwargs):
             if str(m.from_user.id) not in ALLOWED_USER_ACCOUNT_IDS:
                 raise BaseError("Sorry, you have not access to this Bot")
-            return await coro(m, *args, **kwargs)
+            return func(m, *args, **kwargs)
 
         return inner
 
@@ -37,13 +35,9 @@ class UsersCRUD:
         return User(**data) if data else None
 
     @classmethod
-    def fetch_by_account_id(cls, account_id: int) -> User:
+    def fetch_by_account_id(cls, account_id: int) -> Optional[User]:
         data = database.fetch(cls.USERS_TABLE, "account_id", account_id)
-
-        if not data:
-            raise UsersError(f"Nu such user with id {account_id}")
-
-        return User(**data)
+        return User(**data) if data else None
 
     @classmethod
     def save_user(cls, m: types.Message) -> tuple[User, bool]:

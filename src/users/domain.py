@@ -1,12 +1,4 @@
-from typing import Optional
-
 from shared.domain import Model
-
-
-class UsersError(Exception):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
-        message = message or "Can not find user"
-        super().__init__(message, *args, **kwargs)
 
 
 class User(Model):

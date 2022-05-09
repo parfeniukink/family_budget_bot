@@ -5,35 +5,37 @@ from analytics.domain import (
     AnalyticsOptions,
     DetailReportExtraOptions,
 )
-from categories import categories_keyboard
+from categories import CategoriesService
+from shared.keyboards import add_restart_button
 
 
-def analytics_periods_keyboard():
-    keyboard = [
-        [
-            types.InlineKeyboardButton(text=item.name, callback_data=item.callback_data)
-            for item in AnalyticsOptions.values()
-        ]
-    ]
-    return types.InlineKeyboardMarkup(keyboard)
+@add_restart_button
+def analytics_keyboard() -> types.ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for choise in AnalyticsOptions.values():
+        markup.add(types.KeyboardButton(choise))
+
+    return markup
 
 
-def analytics_detail_levels_keyboard() -> types.InlineKeyboardMarkup:
-    keyboard = [
-        [
-            types.InlineKeyboardButton(text=item.name, callback_data=item.callback_data),
-        ]
-        for item in AnalyticsDetailLevels.values()
-    ]
-    return types.InlineKeyboardMarkup(keyboard)
+@add_restart_button
+def analytics_detail_level_keyboard() -> types.ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for choise in AnalyticsDetailLevels.values():
+        markup.add(types.KeyboardButton(choise))
+
+    return markup
 
 
-def analytics_detail_level_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
-    markup = categories_keyboard(callback_data)
-    markup.add(
-        types.InlineKeyboardButton(
-            text=DetailReportExtraOptions.ALL.value.name,
-            callback_data="".join((callback_data, DetailReportExtraOptions.ALL.value.name)),
-        )
-    )
+@add_restart_button
+def analytics_detailed_keyboard() -> types.ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for category in CategoriesService.CACHED_CATEGORIES:
+        markup.add(types.KeyboardButton(category.name))
+
+    markup.add(types.KeyboardButton(DetailReportExtraOptions.ALL.value))
+
     return markup

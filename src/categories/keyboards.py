@@ -1,13 +1,14 @@
 from telebot import types
 
 from categories.services import CategoriesService
+from shared.keyboards import add_restart_button
 
 
-def categories_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
-    keyboard = [
-        [
-            types.InlineKeyboardButton(text=category.name, callback_data="".join((callback_data, category.name))),
-        ]
-        for category in CategoriesService.CACHED_CATEGORIES
-    ]
-    return types.InlineKeyboardMarkup(keyboard)
+@add_restart_button
+def categories_keyboard() -> types.ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for category in CategoriesService.CACHED_CATEGORIES:
+        markup.add(types.KeyboardButton(category.name))
+
+    return markup

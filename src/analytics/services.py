@@ -3,6 +3,7 @@ from itertools import groupby
 from operator import attrgetter
 from typing import Iterable, Optional
 
+from analytics.domain import AnalyticsGeneralMenu
 from analytics.messages import (
     CURRENCY_REPORT_TITLE_MESSAGE,
     INCOME_OTHER_SOURCE_MESSAGE,
@@ -114,15 +115,12 @@ class AnalitycsService:
 
     @classmethod
     def __get_basic_report(
-        cls,
-        date: str,
-        categories_by_id: dict[int, Category],
-        costs: dict[str, list[Cost]],
-        incomes: dict[str, list[Income]],
+        cls, categories_by_id: dict[int, Category], costs: dict[str, list[Cost]], incomes: dict[str, list[Income]]
     ) -> str:
-        message = BOLD.format(text=date)
         uah_title = CURRENCY_REPORT_TITLE_MESSAGE.format(currency=Currencies.UAH.value)
         usd_title = CURRENCY_REPORT_TITLE_MESSAGE.format(currency=Currencies.USD.value)
+
+        message = "".join((BOLD.format(text=AnalyticsGeneralMenu.ANALYTICS.value), "\n"))
 
         uah_costs_message = cls.__get_formatted_costs_by_currency_basic(
             categories_by_id, costs.get(Currencies.get_database_value("UAH"))
@@ -169,14 +167,20 @@ class AnalitycsService:
             "id",
         )  # type: ignore
 
-        report = [
-            *cls.__get_detailed_costs(
+        report = []
+        report.append(BOLD.format(text=AnalyticsGeneralMenu.ANALYTICS.value))
+
+        report.extend(
+            cls.__get_detailed_costs(
                 categories_by_id, costs.get(Currencies.get_database_value("UAH")), Currencies.UAH.value
-            ),
-            *cls.__get_detailed_costs(
+            )
+        )
+
+        report.extend(
+            cls.__get_detailed_costs(
                 categories_by_id, costs.get(Currencies.get_database_value("USD")), Currencies.USD.value
-            ),
-        ]
+            )
+        )
 
         if not category:
             cached_users: dict[int, User] = {}
@@ -203,7 +207,7 @@ class AnalitycsService:
             "id",
         )  # type: ignore
 
-        report = cls.__get_basic_report(month, categories_by_id, costs, incomes)
+        report = cls.__get_basic_report(categories_by_id, costs, incomes)
 
         return [report]
 
@@ -218,6 +222,6 @@ class AnalitycsService:
             "id",
         )  # type: ignore
 
-        report = cls.__get_basic_report(year, categories_by_id, costs, incomes)
+        report = cls.__get_basic_report(categories_by_id, costs, incomes)
 
         return report

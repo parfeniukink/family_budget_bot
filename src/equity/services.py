@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from db import database
-from equity.domain import Equity
+from equity.domain import Equity, EquityGeneralMenu
 from finances import Currencies, Operations
 from shared.formatting import get_number_in_frames
 from shared.messages import LINE_ITEM
@@ -15,12 +15,14 @@ class EquityCRUD:
         data = database.fetchall(cls.__TABLE)
         equity_all = (Equity(**d) for d in data)
 
-        result = "\n".join(
+        fequity = "\n".join(
             (
                 LINE_ITEM.format(key=getattr(Currencies, e.currency.upper()).value, value=get_number_in_frames(e.value))
                 for e in equity_all
             )
         )
+        result = "\n\n".join((EquityGeneralMenu.EQUITY.value, fequity))
+
         return result
 
     @classmethod

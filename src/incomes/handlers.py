@@ -1,190 +1,155 @@
-from datetime import datetime
-
 from telebot import types
 
-from bot import CallbackMessages, bot
+from bot import bot
 from dates import dates_keyboard
-from finances.domain import Currencies
-from incomes.domain import (
-    ExtraCallbackData,
-    IncomesError,
-    IncomesGeneralMenu,
-    IncomesStorage,
-    SalaryAnswers,
-)
-from incomes.keyboards import income_sources_keyboard, is_salary_keyboard
-from incomes.services import IncomesCRUD
-from shared.domain import ConfirmationOptions, base_error_handler, restart_handler
-from shared.keyboards import (
-    confirmation_keyboard,
+from finances import Currencies
+from incomes.domain import IncomesError, IncomesGeneralMenu
+from incomes.keyboards import (
     currencies_keyboard,
-    default_keyboard,
+    income_sources_keyboard,
+    salary_keyboard,
 )
-from shared.validators import money_value_validator
-from storages import State
+from incomes.messages import (
+    INCOME_DATE_ADDED_MESSAGE,
+    INCOME_IS_SALARY_PROMPT,
+    INCOME_NAME_ADDED_MESSAGE,
+    INCOME_NOT_SAVED_MESSAGE,
+    INCOME_OPTION_INVALID_ERROR,
+    INCOME_SAVE_CONFIRMATION_MESSAGE,
+    INCOME_SAVED_MESSAGE,
+    INCOME_VALUE_ADDED_MESSAGE,
+    SELECT_DATE_PROMPT,
+)
+from incomes.services import IncomesService
+from shared.domain import base_error_handler, restart_handler
+from shared.keyboards import confirmation_keyboard, default_keyboard
+from shared.messages import CURRENCY_INVALID_ERROR
 from users import UsersService
 
 __all__ = ("add_incomes",)
 
 
-@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.CONFIRMATION_SELECTED.value))
 @base_error_handler
-async def confirmation_selected_callback_query(q: types.CallbackQuery):
-    storage = IncomesStorage(q.from_user.id)
-    storage.check_fields("value", "description", "currency", "date", "salary")
-    result = q.data.replace(ExtraCallbackData.CONFIRMATION_SELECTED.value, "")
-    salary_text = SalaryAnswers.SALARY.value if storage.salary else SalaryAnswers.NOT_SALARY.value
+@restart_handler
+def confirmation(m: types.Message, service: IncomesService):
+    processed: bool = service.process_confirmation(m.text)
+    message = INCOME_SAVED_MESSAGE if processed else INCOME_NOT_SAVED_MESSAGE
 
-    await CallbackMessages.delete(q)
-
-    if result == ConfirmationOptions.YES.value:
-        IncomesCRUD.save(storage)
-        text = "\n".join(
-            (
-                "✅ Money income saved\n\n",
-                f"Description 👉 {storage.description}",
-                f"Value 👉 {storage.value}",
-                f"Currency 👉 {storage.currency}",
-                f"Date 👉 {storage.date.strftime('%Y-%m-%d')}",  # type: ignore
-                salary_text,
-            )
-        )
-        await bot.send_message(chat_id=q.message.chat.id, text=text, reply_markup=default_keyboard())
-    else:
-        await bot.send_message(
-            chat_id=q.message.chat.id, text="❌ Money income is not saved", reply_markup=default_keyboard()
-        )
-
-
-@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.IS_SALARY_SELECTED.value))
-@base_error_handler
-async def is_salary_selected_callback_query(q: types.CallbackQuery):
-    storage = IncomesStorage(q.from_user.id)
-    storage.check_fields("value", "description", "currency", "date")
-    result = q.data.replace(ExtraCallbackData.IS_SALARY_SELECTED.value, "")
-    storage.salary = True if result == SalaryAnswers.SALARY.value else False
-
-    text = "\n".join(
-        (
-            f"Description 👉 {storage.description}",
-            f"Value 👉 {storage.value}",
-            f"Currency 👉 {storage.currency}",
-            f"Date 👉 {storage.date.strftime('%Y-%m-%d')}",  # type: ignore
-            result,
-            "\nDo you want to save money income?",
-        )
-    )
-    await CallbackMessages.edit(
-        q=q,
-        text=text,
-        reply_markup=confirmation_keyboard(callback_data=ExtraCallbackData.CONFIRMATION_SELECTED.value),
-    )
-
-
-@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.DATE_SELECTED.value))
-@base_error_handler
-async def date_selected_callback_query(q: types.CallbackQuery):
-    storage = IncomesStorage(q.from_user.id)
-    storage.check_fields("value", "description", "currency")
-    result = q.data.replace(ExtraCallbackData.DATE_SELECTED.value, "")
-
-    try:
-        storage.date = datetime.strptime(result, "%Y-%m-%d")
-    except ValueError:
-        raise IncomesError("Date format invalid")
-
-    text = "\n".join(
-        (
-            f"Description 👉 {storage.description}",
-            f"Value 👉 {storage.value}",
-            f"Currency 👉 {storage.currency}",
-            f"Date 👉 {storage.date.strftime('%Y-%m-%d')}",  # type: ignore
-            "\nChoose option",
-        )
-    )
-    await CallbackMessages.edit(
-        q=q,
-        text=text,
-        reply_markup=is_salary_keyboard(
-            callback_data=ExtraCallbackData.IS_SALARY_SELECTED.value,
-        ),
-    )
-
-
-@bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.CURRENCY_SELECTED.value))
-@base_error_handler
-async def currency_selected_callback_query(q: types.CallbackQuery):
-    storage = IncomesStorage(q.from_user.id)
-    storage.check_fields("value", "description")
-    result = q.data.replace(ExtraCallbackData.CURRENCY_SELECTED.value, "")
-    currency = Currencies.get_database_value(result)
-    storage.currency = currency
-
-    text = "\n".join(
-        (
-            f"Description 👉 {storage.description}",
-            f"Value 👉 {storage.value}",
-            f"Currency 👉 {result}",
-            "\nSelect date:",
-        )
-    )
-    await CallbackMessages.edit(
-        q=q, text=text, reply_markup=dates_keyboard(callback_data=ExtraCallbackData.DATE_SELECTED.value)
-    )
+    bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=message)
 
 
 @base_error_handler
-async def description_entered_callback(m: types.Message):
-    storage = IncomesStorage(m.from_user.id)
-    storage.trash_messages.add(m.id)
-    storage.check_fields("value")
+@restart_handler
+def set_salary(m: types.Message, service: IncomesService):
+    service.set_salary(m.text)
+    date = service._date.strftime("%m-%d") if service._date else ""
 
-    for message in storage.trash_messages:
-        await bot.delete_message(m.chat.id, message)
-    storage.trash_messages.clear()
+    if service._salary is None:
+        raise IncomesError(INCOME_OPTION_INVALID_ERROR)
+    if service._currency is None:
+        raise IncomesError(CURRENCY_INVALID_ERROR.format(allowed=Currencies.get_database_values()))
 
-    text = "\n".join(
-        (
-            f"Description 👉 {storage.description}",
-            f"Value 👉 {storage.value}",
-            "\nSelect currency:",
-        )
+    next_step_text = INCOME_SAVE_CONFIRMATION_MESSAGE.format(
+        date=date,
+        description=service._name,
+        value=service._value,
+        currency=getattr(Currencies, service._currency.upper()).value,
+        source=m.text,
     )
-    await bot.send_message(
-        text=text,
+
+    bot.send_message(m.chat.id, text=next_step_text, reply_markup=confirmation_keyboard())
+
+    bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
-        reply_markup=currencies_keyboard(callback_data=ExtraCallbackData.CURRENCY_SELECTED.value),
+        callback=confirmation,
+        service=service,
     )
 
 
 @base_error_handler
-async def value_entered_callback(m: types.Message):
-    storage = IncomesStorage(m.from_user.id)
-    state = State(m.from_user.id)
-    state.set(storage=storage, key="description", validator=None, callback=description_entered_callback)
+@restart_handler
+def set_currency(m: types.Message, service: IncomesService):
+    service.set_currency(m.text)
 
-    storage.trash_messages.add(m.id)
-    sent_message = await bot.send_message(
-        text="Enter the description and press Enter",
+    if not service._currency:
+        raise IncomesError(CURRENCY_INVALID_ERROR.format(allowed=Currencies.get_database_values()))
+
+    currency = getattr(Currencies, service._currency.upper(), Currencies.UAH)
+
+    bot.send_message(
+        m.chat.id,
+        text=INCOME_IS_SALARY_PROMPT.format(currency=currency.value),
+        reply_markup=salary_keyboard(),
+    )
+
+    bot.register_next_step_handler_by_chat_id(
         chat_id=m.chat.id,
+        callback=set_salary,
+        service=service,
+    )
+
+
+@base_error_handler
+@restart_handler
+def set_value(m: types.Message, service: IncomesService):
+    service.set_value(m.text)
+    bot.send_message(
+        m.chat.id,
+        text=INCOME_VALUE_ADDED_MESSAGE.format(value=m.text),
+        reply_markup=currencies_keyboard(),
+    )
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=set_currency,
+        service=service,
+    )
+
+
+@base_error_handler
+@restart_handler
+def set_name(m: types.Message, service: IncomesService):
+    service.set_name(m.text)
+    bot.send_message(
+        m.chat.id,
+        reply_markup=types.ReplyKeyboardRemove(),
+        text=INCOME_NAME_ADDED_MESSAGE.format(name=m.text),
+    )
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=set_value,
+        service=service,
+    )
+
+
+@base_error_handler
+@restart_handler
+def set_date(m: types.Message, service: IncomesService):
+    service.set_date(m.text)
+    bot.send_message(
+        m.chat.id,
         reply_markup=income_sources_keyboard(),
+        text=INCOME_DATE_ADDED_MESSAGE.format(date=m.text),
     )
-    storage.trash_messages.add(sent_message.id)
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=set_name,
+        service=service,
+    )
 
 
 @bot.message_handler(regexp=rf"^{IncomesGeneralMenu.ADD_INCOME.value}")
 @base_error_handler
 @restart_handler
 @UsersService.only_for_members
-async def add_incomes(m: types.Message):
-
-    storage = IncomesStorage(m.from_user.id)
-    state = State(m.from_user.id)
-    state.set(storage=storage, key="value", validator=money_value_validator, callback=value_entered_callback)
-
-    sent_message = await bot.send_message(
-        text="Enter the value and press Enter",
-        chat_id=m.chat.id,
-        reply_markup=types.ReplyKeyboardRemove(),
+def add_incomes(m: types.Message):
+    bot.send_message(
+        m.chat.id,
+        reply_markup=dates_keyboard(),
+        text=SELECT_DATE_PROMPT,
     )
-    storage.trash_messages.add(sent_message.id)
+    service = IncomesService(account_id=m.from_user.id)
+    bot.register_next_step_handler_by_chat_id(
+        chat_id=m.chat.id,
+        callback=set_date,
+        service=service,
+    )

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from categories.domain import CategoriesError, Category
+from categories.domain import Category
 from db import database
 
 
@@ -24,11 +24,11 @@ class CategoriesService(metaclass=CategoriesCache):
     CACHED_CATEGORIES: list[Category]
 
     @classmethod
-    def get_by_name(cls, name: str) -> Category:
+    def get_by_name(cls, name: str) -> Optional[Category]:
         for category in cls.CACHED_CATEGORIES:
             if category.name == name:
                 return category
-        raise CategoriesError()
+        return None
 
     @classmethod
     def get_by_id(cls, id: int) -> Optional[Category]:

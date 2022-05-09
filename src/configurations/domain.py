@@ -1,7 +1,6 @@
 from typing import Optional
 
-from shared.domain import BaseError, CallbackItem, Enum, Model, random_uuid
-from storages import Storage
+from shared.domain import BaseError, Enum, Model
 
 
 class ConfigurationsGeneralMenu(Enum):
@@ -15,14 +14,14 @@ class ConfigurationError(BaseError):
 
 
 class ConfigurationsMenu(Enum):
-    GET_ALL = CallbackItem(name="📜 Get all configurations")
-    EDIT = CallbackItem(name="📝 Edit")
+    GET_ALL = "📜 Get all configurations"
+    UPDATE = "📝 Update"
 
 
 class Configurations(Enum):
-    DEFAULT_CURRENCY = "Default currency"
-    INCOME_SOURCES = "Money incomes sources"
-    KEYBOARD_DATES_AMOUNT = "The amount of dates in keyboard"
+    DEFAULT_CURRENCY = "⚪️ Default currency"
+    INCOME_SOURCES = "⚪️ Patterns for money income sources"
+    KEYBOARD_DATES_AMOUNT = "⚪️ The amount of dates in keyboard"
 
     @classmethod
     def get_instance_by_value(cls, val: str) -> Optional[Enum]:
@@ -35,21 +34,3 @@ class Configuration(Model):
     id: int
     key: str
     value: str
-
-
-class ExtraCallbackData(Enum):
-    CONFIGURATION_SELECTED = random_uuid()
-    CONFIRMATION_SELECTED = random_uuid()
-    CURRENCY_SELECTED = random_uuid()
-
-
-class ConfigurationsStorage(Storage):
-    __slots__ = "configuration", "value"
-
-    def __init__(self, account_id: int) -> None:
-        if getattr(self, "__initialized", False):
-            return
-
-        super().__init__(account_id)
-        self.configuration: Optional[Configuration] = None
-        self.value: Optional[str] = None

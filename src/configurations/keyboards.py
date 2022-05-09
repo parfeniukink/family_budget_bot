@@ -1,30 +1,24 @@
 from telebot import types
 
 from configurations.domain import Configurations, ConfigurationsMenu
+from shared.keyboards import add_restart_button
 
 
-def configurations_keyboard() -> types.InlineKeyboardMarkup:
-    keyboard = [
-        [
-            types.InlineKeyboardButton(
-                text=item.name,
-                callback_data=item.callback_data,
-            ),
-        ]
-        for item in ConfigurationsMenu.values()
-    ]
-    return types.InlineKeyboardMarkup(keyboard)
+@add_restart_button
+def configurations_keyboard() -> types.ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for choise in ConfigurationsMenu.values():
+        markup.add(types.KeyboardButton(choise))
+
+    return markup
 
 
-def configurations_edit_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
-    keyboard = [
-        [
-            types.InlineKeyboardButton(
-                text=item.value,
-                callback_data="".join((callback_data, item.name)),
-            ),
-        ]
-        for item in Configurations
-    ]
+@add_restart_button
+def configurations_update_keyboard() -> types.ReplyKeyboardMarkup:
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-    return types.InlineKeyboardMarkup(keyboard)
+    for configuration in Configurations:
+        markup.add(types.KeyboardButton(configuration.value))
+
+    return markup

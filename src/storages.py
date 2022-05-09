@@ -1,5 +1,7 @@
 from typing import Any, Callable, Optional
 
+from loguru import logger
+
 from shared.domain import BaseError
 from shared.messages import MESSAGE_DEPRICATED
 
@@ -46,6 +48,7 @@ class Storage:
             return
 
         self.account_id: int = account_id
+        self.trash_messages: set[int] = set()
         setattr(self, "__initialized", True)
 
     @classmethod
@@ -55,7 +58,13 @@ class Storage:
     def check_fields(self, *args):
         for arg in args:
             if getattr(self, arg, None) is None:
+                logger.debug(f"{arg} -> Not set when check fields")
                 raise BaseError(MESSAGE_DEPRICATED)
+
+    def clean(self) -> None:
+        data = self.__dict__
+        for field in {key: data for key in data.keys() ^ "trash_messages"}:
+            setattr(self, field, None)
 
 
 class State:

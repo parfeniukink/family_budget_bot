@@ -46,7 +46,6 @@ def base_error_handler(coro: Callable) -> Callable:
 
     @wraps(coro)
     async def inner(m: Union[types.Message, types.CallbackQuery], *args, **kwargs) -> Optional[types.Message]:
-        from shared.keyboards import default_keyboard
 
         regular_message = isinstance(m, types.Message)
         chat_id = m.chat.id if regular_message else m.message.chat.id
@@ -97,7 +96,7 @@ def _uuid_facory() -> Generator:
     items = set()
 
     while True:
-        item = str(uuid4())
+        item = str(uuid4())[:15]
 
         if item not in items:
             items.add(item)

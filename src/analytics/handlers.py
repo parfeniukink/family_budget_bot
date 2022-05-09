@@ -1,4 +1,3 @@
-from loguru import logger
 from telebot import types
 
 from analytics.domain import (
@@ -30,7 +29,6 @@ __all__ = ("analytics",)
 @bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.CATEGORY_SELECTED.value))
 @base_error_handler
 async def category_selected_callback_query(q: types.CallbackQuery):
-    logger.debug("Category selected callback query handler")
     storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
 
     if storage.option is not AnalyticsOptions.MONTHLY:
@@ -44,7 +42,7 @@ async def category_selected_callback_query(q: types.CallbackQuery):
 
     await CallbackMessages.delete(q)
 
-    if category_name == DetailReportExtraOptions.ALL.value:
+    if category_name == DetailReportExtraOptions.ALL.value.name:
         reports = AnalitycsService.get_monthly_detailed_report(storage.date)
         for report in reports:
             await bot.send_message(q.message.chat.id, text=report, **DEFAULT_SEND_SETTINGS)
@@ -64,9 +62,11 @@ async def detail_level_selected_callback_query(q: types.CallbackQuery):
         raise AnalyticsError(MESSAGE_DEPRICATED)
 
     storage.detail_level = AnalyticsDetailLevels.DETAILED
-    markup = analytics_detail_level_keyboard(callback_data=ExtraCallbackData.CATEGORY_SELECTED.value)
-
-    await CallbackMessages.edit(q=q, text="Please select the category", reply_markup=markup)
+    await CallbackMessages.edit(
+        q=q,
+        text="Please select the category",
+        reply_markup=analytics_detail_level_keyboard(callback_data=ExtraCallbackData.CATEGORY_SELECTED.value),
+    )
 
 
 @bot.callback_query_handler(func=lambda c: c.data == AnalyticsDetailLevels.BASIC.value.callback_data)

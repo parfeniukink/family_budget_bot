@@ -15,6 +15,19 @@ from shared.formatting import get_number_in_frames
 from users import User, UsersCRUD
 
 
+class CostsCRUD:
+    __TABLE = "costs"
+
+    @classmethod
+    def get_by_id(cls, cost_id: str) -> Optional[Cost]:
+        data: Optional[dict] = database.fetch(cls.__TABLE, "id", cost_id)
+        return Cost(**data) if data else None
+
+    @classmethod
+    def delete_by_id(cls, cost_id: str) -> None:
+        database.delete(cls.__TABLE, "id", cost_id)
+
+
 class CostsService:
     __FULL_DATE_FROAMT = "%Y-%m-%d"
     __MONTHLY_DATE_FROAMT = "%Y-%m"
@@ -129,6 +142,10 @@ class CostsService:
         costs = [Cost(**item) for item in data]
 
         return {currency: list(costs_iter) for currency, costs_iter in cls.get_costs_by_currency(costs)}
+
+    @classmethod
+    def get_by_id(cls, cost_id: str) -> None:
+        database.delete(cls.__TABLE, "id", cost_id)
 
     @classmethod
     def delete_by_id(cls, cost_id: str) -> None:

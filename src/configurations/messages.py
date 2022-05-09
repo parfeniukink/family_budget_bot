@@ -7,8 +7,6 @@ CONFIGURATION_UPDATED_MESSAGE = "\n".join(
     )
 )
 
-CONFIGURATION_WAS_NOT_FOUND_MESSAGE = "Can not find configuration {config_name} in database"
-
 CONFIGURATION_UPDATE_PAYLOAD_INVALID_MESSAGE = "Invalid configuratoin update payload"
 
 CONFIGURATION_VALUE_IS_NOT_SET_MESSAGE = "Configuration value is not set"

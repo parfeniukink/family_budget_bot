@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from telebot import types
 
@@ -13,12 +14,12 @@ from costs.domain import (
     ExtraCallbackData,
 )
 from costs.keyboards import ids_keyboard
-from costs.services import CostsService
-from costs.validators import cost_value_validator
+from costs.services import CostsCRUD, CostsService
 from dates import dates_keyboard, exist_dates_keyboard
 from shared.domain import ConfirmationOptions, base_error_handler
-from shared.keyboards import confirmation_keyboard
+from shared.keyboards import confirmation_keyboard, default_keyboard
 from shared.messages import MESSAGE_DEPRICATED
+from shared.validators import money_value_validator
 from storages import State
 from users import UsersService
 
@@ -29,11 +30,23 @@ __all__ = ("delete_costs", "add_costs")
 @base_error_handler
 async def add_confirmation_selected_callback_query(q: types.CallbackQuery):
     storage = CostsStorage(q.from_user.id)
-    storage.check_fields("category", "value", "description")
+    storage.check_fields("category", "value", "description", "date")
     result = q.data.replace(ExtraCallbackData.ADD_CONFIRMATION_SELECTED.value, "")
-    # TODO: Finish from here. Add handlers to save and decline costs
-    # TODO: Leave the whole message with cost details after the confirmation
-    await CallbackMessages.edit(q=q, text=result)
+
+    await CallbackMessages.delete(q)
+
+    if result == ConfirmationOptions.YES.value:
+        CostsService.save_costs(storage)
+        text = (
+            "✅ Cost saved\n\n"
+            f"Description 👉 {storage.description}\n"
+            f"Value 👉 {storage.value}\n"
+            f"Category 👉 {storage.category.name}\n"  # type: ignore
+            f"Date 👉 {storage.date.strftime('%Y-%m-%d')}"  # type: ignore
+        )
+        await bot.send_message(chat_id=q.message.chat.id, text=text, reply_markup=default_keyboard())
+    else:
+        await bot.send_message(chat_id=q.message.chat.id, text="❌ Cost is not saved", reply_markup=default_keyboard())
 
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith(ExtraCallbackData.ADD_MONTH_SELECTED.value))
@@ -91,6 +104,7 @@ async def description_entered_callback(m: types.Message):
 
     for message in storage.trash_messages:
         await bot.delete_message(m.chat.id, message)
+    storage.trash_messages.clear()
 
     text = f"Description 👉 {storage.description}\nValue 👉 {storage.value}\n\nSelect category:"
     await bot.send_message(
@@ -123,7 +137,7 @@ async def value_entered_callback(m: types.Message):
 async def add_costs(m: types.Message):
     storage = CostsStorage(m.from_user.id)
     state = State(m.from_user.id)
-    state.set(storage=storage, key="value", validator=cost_value_validator, callback=value_entered_callback)
+    state.set(storage=storage, key="value", validator=money_value_validator, callback=value_entered_callback)
 
     sent_message = await bot.send_message(
         text="Enter the value and press Enter",
@@ -154,10 +168,22 @@ async def del_confirmation_selected_callback_query(q: types.CallbackQuery):
 async def id_to_delete_selected_callback_query(q: types.CallbackQuery):
     storage = CostsStorage(q.from_user.id)
     storage.delete_id = q.data.replace(ExtraCallbackData.COST_ID_SELECTED.value, "")
+    cost: Optional[Cost] = CostsCRUD.get_by_id(storage.delete_id)
 
+    if not cost:
+        raise CostsError("Nu such cost in database")
+
+    text = "\n".join(
+        (
+            "Do you realy want to delete cost?\n",
+            f"Date 👉 {cost.date.strftime('%Y-%m-%d')}",
+            f"Description 👉 {cost.name}",
+            f"Value 👉 {cost.value}",
+        )
+    )
     await CallbackMessages.edit(
         q=q,
-        text="Confirmation menu",
+        text=text,
         reply_markup=confirmation_keyboard(
             callback_data=ExtraCallbackData.DEL_CONFIRMATION_SELECTED.value,
         ),
@@ -210,6 +236,8 @@ async def month_selected_callback_query(q: types.CallbackQuery):
 @base_error_handler
 @UsersService.only_for_members
 async def delete_costs(m: types.Message):
+    storage = CostsStorage(m.from_user.id)
+    storage.clean()
     await bot.send_message(
         text="Please select month",
         chat_id=m.chat.id,

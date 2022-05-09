@@ -2,7 +2,8 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional, Union
 
-from shared.domain import BaseError, Enum, Model
+from shared.domain import BaseError, Enum, Model, random_uuid
+from storages import Storage
 
 
 class IncomesGeneralMenu(Enum):
@@ -17,7 +18,14 @@ class IncomesError(BaseError):
 
 class SalaryAnswers(Enum):
     SALARY = "✅ Salary"
-    NOT_SALARY = "❌ Not salary"
+    NOT_SALARY = "❌ Other income"
+
+
+class ExtraCallbackData(Enum):
+    CURRENCY_SELECTED = random_uuid()
+    DATE_SELECTED = random_uuid()
+    IS_SALARY_SELECTED = random_uuid()
+    CONFIRMATION_SELECTED = random_uuid()
 
 
 class Income(Model):
@@ -59,3 +67,18 @@ class Income(Model):
             other = -other
 
         return self.__add__(other)
+
+
+class IncomesStorage(Storage):
+    __slots__ = "value", "description", "date"
+
+    def __init__(self, account_id: int) -> None:
+        if getattr(self, "__initialized", False):
+            return
+
+        super().__init__(account_id)
+        self.value: Optional[str] = None
+        self.description: Optional[str] = None
+        self.date: Optional[date] = None
+        self.currency: Optional[str] = None
+        self.salary: Optional[bool] = None

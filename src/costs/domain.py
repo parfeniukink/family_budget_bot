@@ -73,14 +73,13 @@ class ExtraCallbackData(Enum):
 
 
 class CostsStorage(Storage):
-    __slots__ = "costs", "category", "delete_id"
+    __slots__ = "costs", "category", "delete_id", "value", "description", "date"
 
     def __init__(self, account_id: int) -> None:
         if getattr(self, "__initialized", False):
             return
 
         super().__init__(account_id)
-        self.trash_messages: set[int] = set()
         self.value: Optional[str] = None
         self.description: Optional[str] = None
         self.date: Optional[date] = None

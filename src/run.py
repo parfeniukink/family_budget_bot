@@ -6,7 +6,10 @@ from loguru import logger
 
 from analytics.handlers import *  # noqa
 from bot import bot
+from configurations.handlers import *  # noqa
 from costs.handlers import *  # noqa
+from equity.handlers import *  # noqa
+from incomes.handlers import *  # noqa
 from shared.handlers import *  # noqa
 from startup.handlers import *  # noqa
 
@@ -21,7 +24,7 @@ async def start_bot():
         logger.error(err)
         logger.error("🔴 Bot is down.\nRestarting...")
         logger.info("Sleeping for 30 seconds")
-        sleep(10)
+        sleep(5)
         await start_bot()
 
 

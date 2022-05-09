@@ -1,10 +1,11 @@
 from bot import bot
-from shared.domain import base_error_handler
+from shared.domain import base_error_handler, restart_handler
 from storages import State
 
 
 @bot.message_handler(func=lambda _: True)
 @base_error_handler
+@restart_handler
 async def all_messages(m):
     state = State(m.from_user.id)
 

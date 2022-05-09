@@ -1,18 +1,10 @@
-from typing import Optional
-
-from configurations.domain import Configuration, ConfigurationError, Configurations
-from configurations.messages import (
-    CONFIGURATION_INCOME_SOURCE_PAYLOAD_ERROR,
-    CONFIGURATION_INVALID_MESSAGE,
-    CONFIGURATION_UPDATE_PAYLOAD_INVALID_MESSAGE,
-    CONFIGURATION_VALUE_IS_NOT_SET_MESSAGE,
-    CONFIGURATION_VALUE_VALUE_ERROR,
-    CONFIGURATION_WAS_NOT_FOUND_MESSAGE,
+from configurations.domain import (
+    Configuration,
+    ConfigurationError,
+    Configurations,
+    ConfigurationsStorage,
 )
 from db import database
-from finances import Currencies
-from shared import messages
-from shared.domain import Enum
 from shared.messages import BOLD, LINE_ITEM
 
 __all__ = ("ConfigurationsService",)
@@ -42,7 +34,7 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
         for configuration in cls.CACHED_CONFIGURATIONS:
             if configuration.key == name:
                 return configuration
-        raise ConfigurationError(CONFIGURATION_WAS_NOT_FOUND_MESSAGE.format(config_name=name))
+        raise ConfigurationError(f"Can not find configuration {name} in database")
 
     @classmethod
     def get_all_formatted(cls) -> str:
@@ -57,33 +49,11 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
         return "\n\n\n".join((BOLD.format(text="⚙️ Active configuratoins"), configurations))
 
     @classmethod
-    def data_is_valid(cls, data: tuple[str, Optional[str]]) -> None:
-        if len(data) != 2:
-            raise ConfigurationError(CONFIGURATION_UPDATE_PAYLOAD_INVALID_MESSAGE)
-        if not data[1]:
-            raise ConfigurationError(CONFIGURATION_VALUE_IS_NOT_SET_MESSAGE)
-        if data[0] not in Configurations.values():
-            raise ConfigurationError(CONFIGURATION_INVALID_MESSAGE)
-        if data[0] == Configurations.DEFAULT_CURRENCY.value and data[1] not in Currencies.get_database_values():
-            raise ConfigurationError(messages.CURRENCY_INVALID_ERROR.format(allowed=Currencies.get_database_values()))
-        if data[0] == Configurations.INCOME_SOURCES.value and ", " in data[1]:
-            raise ConfigurationError(CONFIGURATION_INCOME_SOURCE_PAYLOAD_ERROR)
-        if data[0] == Configurations.KEYBOARD_DATES_AMOUNT.value:
-            try:
-                int(data[1])
-            except ValueError:
-                raise ConfigurationError(CONFIGURATION_VALUE_VALUE_ERROR)
-
-    @classmethod
-    def update(cls, data: tuple[str, Optional[str]]) -> Configuration:
-        cls.data_is_valid(data)
-
-        config_name: Optional[Enum] = Configurations.get_instance_by_value(data[0])
-        if not config_name:
-            raise ConfigurationError(CONFIGURATION_WAS_NOT_FOUND_MESSAGE.format(config_name=config_name))
-
+    def update(cls, storage: ConfigurationsStorage) -> Configuration:
         update_data: dict = database.update(
-            cls.__TABLE, data=("value", str(data[1])), condition=("key", config_name.name.lower())
+            cls.__TABLE,
+            data=("value", storage.value),
+            condition=("key", storage.configuration.key),  # type: ignore
         )
         configuration = Configuration(**update_data)
 

@@ -56,14 +56,15 @@ class Storage:
         return hash(str(value) + cls.__name__)
 
     def check_fields(self, *args):
+        """Raise error if any arg from *args is not set"""
+
         for arg in args:
             if getattr(self, arg, None) is None:
                 logger.debug(f"{arg} -> Not set when check fields")
                 raise BaseError(MESSAGE_DEPRICATED)
 
     def clean(self) -> None:
-        data = self.__dict__
-        for field in {key: data for key in data.keys() ^ "trash_messages"}:
+        for field in self.__slots__:
             setattr(self, field, None)
 
 

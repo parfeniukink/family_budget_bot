@@ -1,8 +1,10 @@
-from loguru import logger
+from contextlib import suppress
+
 from telebot import types
 
 from bot import CallbackMessages, bot
 from configurations.domain import (
+    Configuration,
     Configurations,
     ConfigurationsGeneralMenu,
     ConfigurationsMenu,
@@ -40,17 +42,17 @@ async def confirmation_selected_callback_query(q: types.CallbackQuery):
     storage.trash_messages.add(q.message.id)
 
     for message in storage.trash_messages:
-        await bot.delete_message(chat_id=q.message.chat.id, message_id=message)
+        with suppress(Exception):
+            await bot.delete_message(chat_id=q.message.chat.id, message_id=message)
 
     if result == ConfirmationOptions.YES.value:
-        configuration = ConfigurationsService.update(storage)
-        configuration_repr = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
-        currency = getattr(Currencies, configuration.value.upper())
+        configuration: Configuration = ConfigurationsService.update(storage)
+        configuration_repr: Configurations = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
 
         text = "\n\n".join(
             (
                 "✅ Configuration saved",
-                f"{configuration_repr.value} 👉 {currency.value}",
+                f"{configuration_repr.value} 👉 {configuration.value}",
             )
         )
         await bot.send_message(
@@ -74,12 +76,11 @@ async def value_entered_callback(m: types.Message):
     storage.check_fields("configuration", "value")
     storage.trash_messages.add(m.id)
     configuration_repr = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
-    currency = getattr(Currencies, storage.configuration.value.upper())  # type: ignore
 
     text = "\n\n".join(
         (
             "Do you want to update the configuration?",
-            f"{configuration_repr.value} 👉 {currency.value}",  # type: ignore
+            f"{configuration_repr.value} 👉 {storage.value}",  # type: ignore
         )
     )
 
@@ -99,7 +100,7 @@ async def currency_selected_callback_query(q: types.CallbackQuery):
     result = q.data.replace(ExtraCallbackData.CURRENCY_SELECTED.value, "")
     storage.value = Currencies.get_database_value(result)
     configuration_repr = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
-    currency = getattr(Currencies, storage.configuration.value.upper())  # type: ignore
+    currency = getattr(Currencies, storage.value.upper())  # type: ignore
 
     text = "\n\n".join(
         (
@@ -133,7 +134,7 @@ async def configuration_selected_callback_query(q: types.CallbackQuery):
             ),
         )
 
-    logger.debug("AFTER ---------------------")
+    # NOTE: Setup new state
     state.set(
         storage=storage,
         key="value",

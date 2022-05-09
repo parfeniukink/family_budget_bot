@@ -17,8 +17,8 @@ class IncomesError(BaseError):
 
 
 class SalaryAnswers(Enum):
-    SALARY = "✅ Salary"
-    NOT_SALARY = "❌ Other income"
+    SALARY = "💰 Salary"
+    NOT_SALARY = "💸 Other income"
 
 
 class ExtraCallbackData(Enum):

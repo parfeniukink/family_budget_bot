@@ -55,9 +55,9 @@ def confirmation_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
 
     keyboard = [
         [
-            types.InlineKeyboardButton(text=item, callback_data="".join((callback_data, item))),
+            types.InlineKeyboardButton(text=item, callback_data="".join((callback_data, item)))
+            for item in ConfirmationOptions.values()
         ]
-        for item in ConfirmationOptions.values()
     ]
 
     markup = types.InlineKeyboardMarkup(keyboard)

@@ -13,7 +13,7 @@ from telebot import types
 from bot import CallbackMessages, bot
 from settings import DEFAULT_SEND_SETTINGS, RESTART_BUTTON_TEXT
 from shared.keyboards import default_keyboard
-from shared.messages import ABORTED
+from shared.messages import RESTART
 
 
 class BaseError(Exception):
@@ -31,7 +31,7 @@ def restart_handler(coro: Callable):
     @wraps(coro)
     async def inner(m: types.Message, *args, **kwargs):
         if m.text == RESTART_BUTTON_TEXT:
-            await bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=ABORTED)
+            await bot.send_message(m.chat.id, reply_markup=default_keyboard(), text=RESTART)
         else:
             return await coro(m, *args, **kwargs)
 
@@ -120,3 +120,8 @@ class CallbackItem(Model):
 class ConfirmationOptions(Enum):
     YES = "✅ Yes"
     NO = "❌ No"
+
+
+class PaginationOptions(Enum):
+    RIGHT = "Right"
+    LEFT = "Left"

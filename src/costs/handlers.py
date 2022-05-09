@@ -1,3 +1,4 @@
+from contextlib import suppress
 from datetime import datetime
 from typing import Optional
 
@@ -103,10 +104,11 @@ async def description_entered_callback(m: types.Message):
     storage.trash_messages.add(m.id)
 
     for message in storage.trash_messages:
-        await bot.delete_message(m.chat.id, message)
-    storage.trash_messages.clear()
+        with suppress(Exception):
+            await bot.delete_message(m.chat.id, message)
 
     text = f"Description 👉 {storage.description}\nValue 👉 {storage.value}\n\nSelect category:"
+
     await bot.send_message(
         text=text,
         chat_id=m.chat.id,

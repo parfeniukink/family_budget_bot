@@ -5,7 +5,7 @@ from configurations.domain import (
     ConfigurationsStorage,
 )
 from db import database
-from shared.messages import BOLD, LINE_ITEM
+from shared.messages import LINE_ITEM
 
 __all__ = ("ConfigurationsService",)
 
@@ -38,7 +38,7 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
 
     @classmethod
     def get_all_formatted(cls) -> str:
-        configurations = "\n\n".join(
+        return "\n\n".join(
             (
                 [
                     LINE_ITEM.format(key=getattr(Configurations, c.key.upper()).value, value=c.value)
@@ -46,7 +46,6 @@ class ConfigurationsService(metaclass=ConfigurationsCache):
                 ]
             )
         )
-        return "\n\n\n".join((BOLD.format(text="⚙️ Active configuratoins"), configurations))
 
     @classmethod
     def update(cls, storage: ConfigurationsStorage) -> Configuration:

@@ -12,9 +12,9 @@ from users import UsersService
 @restart_handler
 @base_error_handler
 @UsersService.only_for_members
-def equity(m: types.Message):
+async def equity(m: types.Message):
     text = EquityCRUD.get_formatted()
-    bot.send_message(
+    await bot.send_message(
         m.chat.id,
         reply_markup=default_keyboard(),
         text=text,

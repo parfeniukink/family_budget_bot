@@ -40,10 +40,26 @@ def default_keyboard() -> types.ReplyKeyboardMarkup:
     return markup
 
 
-@add_restart_button
-def confirmation_keyboard() -> types.ReplyKeyboardMarkup:
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(types.InlineKeyboardButton("✅ Yes"))
-    markup.add(types.InlineKeyboardButton("❌ No"))
+def currencies_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
+    from finances import Currencies
+
+    keyboard = [
+        [types.InlineKeyboardButton(text=item.value, callback_data="".join((callback_data, item.name)))]
+        for item in Currencies
+    ]
+    return types.InlineKeyboardMarkup(keyboard)
+
+
+def confirmation_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
+    from shared.domain import ConfirmationOptions
+
+    keyboard = [
+        [
+            types.InlineKeyboardButton(text=item, callback_data="".join((callback_data, item)))
+            for item in ConfirmationOptions.values()
+        ]
+    ]
+
+    markup = types.InlineKeyboardMarkup(keyboard)
 
     return markup

@@ -153,13 +153,10 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ### Analytics
 <image src="https://media.giphy.com/media/YsKJS5RFgoE4BW0Zww/giphy.gif" width="400"/>
 
-### Configurations
-<image align="left" src="https://media.giphy.com/media/YsKJS5RFgoE4BW0Zww/giphy.gif" width="400"/>
-
 ### Equity
 <image src="https://media.giphy.com/media/RNzxxoBc0uwx6GB2ro/giphy.gif" width="400"/>
 
 ### Configurations
 <image align="left" src="https://media.giphy.com/media/4nmWMYqB1SW2bulDlJ/giphy.gif" width="400"/>
 <image align="right" src="https://media.giphy.com/media/icf4oMaqsNYwCRvh5n/giphy.gif" width="400"/>
-<image src="https://media.giphy.com/media/lD1EDZNRi7IbOe2Vah/giphy.gif" width="400"/>
+<image align="left" src="https://media.giphy.com/media/lD1EDZNRi7IbOe2Vah/giphy.gif" width="400"/>

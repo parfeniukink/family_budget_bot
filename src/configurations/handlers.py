@@ -25,7 +25,7 @@ from shared.keyboards import (
     currencies_keyboard,
     default_keyboard,
 )
-from shared.messages import BASE_QUESTION
+from shared.messages import BASE_QUESTION, BOLD
 from storages import State
 from users import UsersService
 
@@ -124,6 +124,7 @@ async def configuration_selected_callback_query(q: types.CallbackQuery):
     storage = ConfigurationsStorage(q.from_user.id)
     state = State(q.from_user.id)
     storage.configuration_name = q.data.replace(ExtraCallbackData.CONFIGURATION_SELECTED.value, "").lower()
+    configuration_name_repr = getattr(Configurations, storage.configuration_name.upper()).value
 
     # NOTE: if user selects the default currency configuration the bot shows 2 buttons with possible options
     if storage.configuration_name == Configurations.DEFAULT_CURRENCY.name.lower():
@@ -146,9 +147,10 @@ async def configuration_selected_callback_query(q: types.CallbackQuery):
     await CallbackMessages.delete(q)
 
     sent_message = await bot.send_message(
-        text="Enter the new value and press Enter",
+        text=f"You selected {BOLD.format(text=configuration_name_repr)} configuration\nEnter the new and press Enter",
         chat_id=q.message.chat.id,
         reply_markup=types.ReplyKeyboardRemove(),
+        **DEFAULT_SEND_SETTINGS,
     )
     storage.trash_messages.add(sent_message.id)
 

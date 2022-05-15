@@ -7,6 +7,8 @@ from telebot import types
 from bot import CallbackMessages, bot
 from categories import categories_keyboard
 from categories.services import CategoriesService
+from configurations.domain import Configuration
+from configurations.services import ConfigurationsCRUD
 from costs.domain import (
     Cost,
     CostsError,
@@ -17,12 +19,13 @@ from costs.domain import (
 from costs.keyboards import ids_keyboard
 from costs.services import CostsCRUD, CostsService
 from dates import dates_keyboard, exist_dates_keyboard
+from finances import Currencies
 from shared.domain import ConfirmationOptions, base_error_handler
 from shared.keyboards import confirmation_keyboard, default_keyboard
 from shared.messages import MESSAGE_DEPRICATED
 from shared.validators import money_value_validator
 from storages import State
-from users import UsersService
+from users import User, UsersCRUD, UsersService
 
 __all__ = ("delete_costs", "add_costs")
 
@@ -34,6 +37,9 @@ async def add_confirmation_selected_callback_query(q: types.CallbackQuery):
     storage.check_fields("category", "value", "description", "date")
     result = q.data.replace(ExtraCallbackData.ADD_CONFIRMATION_SELECTED.value, "")
 
+    user: User = UsersCRUD.fetch_by_account_id(q.from_user.id)
+    configuration: Configuration = ConfigurationsCRUD.fetch(user)
+
     await CallbackMessages.delete(q)
 
     if result == ConfirmationOptions.YES.value:
@@ -42,6 +48,7 @@ async def add_confirmation_selected_callback_query(q: types.CallbackQuery):
             "✅ Cost saved\n\n"
             f"Description 👉 {storage.description}\n"
             f"Value 👉 {storage.value}\n"
+            f"Currency 👉 {Currencies.get_repr(configuration.default_currency)}\n"
             f"Category 👉 {storage.category.name}\n"  # type: ignore
             f"Date 👉 {storage.date.strftime('%Y-%m-%d')}"  # type: ignore
         )
@@ -55,6 +62,7 @@ async def add_confirmation_selected_callback_query(q: types.CallbackQuery):
 async def date_add_selected_callback_query(q: types.CallbackQuery):
     storage = CostsStorage(q.from_user.id)
     storage.check_fields("category", "value", "description")
+
     date = q.data.replace(ExtraCallbackData.ADD_MONTH_SELECTED.value, "")
 
     try:
@@ -84,6 +92,9 @@ async def category_add_selected_callback_query(q: types.CallbackQuery):
     category_name = q.data.replace(ExtraCallbackData.ADD_CATEGORYADD_SELECTED.value, "")
     storage.category = CategoriesService.get_by_name(category_name)
 
+    user = UsersCRUD.fetch_by_account_id(q.from_user.id)
+    configuration = ConfigurationsCRUD.fetch(user)
+
     text = (
         f"Description 👉 {storage.description}\n"
         f"Value 👉 {storage.value}\n"
@@ -94,7 +105,10 @@ async def category_add_selected_callback_query(q: types.CallbackQuery):
     await CallbackMessages.edit(
         q=q,
         text=text,
-        reply_markup=dates_keyboard(callback_data=ExtraCallbackData.ADD_MONTH_SELECTED.value),
+        reply_markup=dates_keyboard(
+            configuration=configuration,
+            callback_data=ExtraCallbackData.ADD_MONTH_SELECTED.value,
+        ),
     )
 
 
@@ -181,6 +195,7 @@ async def id_to_delete_selected_callback_query(q: types.CallbackQuery):
             f"Date 👉 {cost.date.strftime('%Y-%m-%d')}",
             f"Description 👉 {cost.name}",
             f"Value 👉 {cost.value}",
+            f"Currency 👉 {Currencies.get_repr(cost.currency)}",
         )
     )
     await CallbackMessages.edit(
@@ -229,7 +244,9 @@ async def month_selected_callback_query(q: types.CallbackQuery):
 
     await CallbackMessages.edit(
         q=q,
-        reply_markup=categories_keyboard(callback_data=ExtraCallbackData.DEL_CATEGORY_SELECTED.value),
+        reply_markup=categories_keyboard(
+            callback_data=ExtraCallbackData.DEL_CATEGORY_SELECTED.value,
+        ),
         text="Please select the category",
     )
 
@@ -240,10 +257,15 @@ async def month_selected_callback_query(q: types.CallbackQuery):
 async def delete_costs(m: types.Message):
     storage = CostsStorage(m.from_user.id)
     storage.clean()
+
+    user = UsersCRUD.fetch_by_account_id(m.from_user.id)
+    configuration = ConfigurationsCRUD.fetch(user)
+
     await bot.send_message(
         text="Please select month",
         chat_id=m.chat.id,
         reply_markup=exist_dates_keyboard(
+            configuration=configuration,
             date_format="%Y-%m",
             callback_data=ExtraCallbackData.DEL_MONTH_SELECTED.value,
         ),

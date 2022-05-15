@@ -33,8 +33,10 @@ class Configurations(Enum):
 
 class Configuration(Model):
     id: int
-    key: str
-    value: str
+    default_currency: str
+    income_sources: Optional[str]
+    keyboard_dates_amount: int
+    user_id: int
 
 
 class ExtraCallbackData(Enum):
@@ -44,12 +46,12 @@ class ExtraCallbackData(Enum):
 
 
 class ConfigurationsStorage(Storage):
-    __slots__ = "configuration", "value"
+    __slots__ = "configuration_name", "value"
 
     def __init__(self, account_id: int) -> None:
         if getattr(self, "__initialized", False):
             return
 
         super().__init__(account_id)
-        self.configuration: Optional[Configuration] = None
+        self.configuration_name: Optional[str] = None
         self.value: Optional[str] = None

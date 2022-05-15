@@ -17,11 +17,13 @@ from analytics.keyboards import (
 from analytics.services import AnalitycsService
 from bot import CallbackMessages, bot
 from categories import CategoriesService
+from configurations.services import ConfigurationsCRUD
 from dates import exist_dates_keyboard
 from settings import DEFAULT_SEND_SETTINGS
 from shared.domain import base_error_handler, restart_handler
 from shared.messages import MESSAGE_DEPRICATED
 from users import UsersService
+from users.services import UsersCRUD
 
 __all__ = ("analytics",)
 
@@ -119,11 +121,17 @@ async def year_selected_callback_query(q: types.CallbackQuery):
 async def monthly_dispatcher(q: types.CallbackQuery):
     storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
     storage.option = AnalyticsOptions.MONTHLY
+    user = UsersCRUD.fetch_by_account_id(q.from_user.id)
+    configuration = ConfigurationsCRUD.fetch(user)
 
     await CallbackMessages.edit(
         q=q,
         text="Select month from the list",
-        reply_markup=exist_dates_keyboard(date_format="%Y-%m", callback_data=ExtraCallbackData.MONTH_SELECTED.value),
+        reply_markup=exist_dates_keyboard(
+            configuration=configuration,
+            date_format="%Y-%m",
+            callback_data=ExtraCallbackData.MONTH_SELECTED.value,
+        ),
     )
 
 
@@ -132,11 +140,17 @@ async def monthly_dispatcher(q: types.CallbackQuery):
 async def annually_dispatcher(q: types.CallbackQuery):
     storage: AnalyticsStorage = AnalyticsStorage(q.from_user.id)
     storage.option = AnalyticsOptions.ANNUALLY
+    user = UsersCRUD.fetch_by_account_id(q.from_user.id)
+    configuration = ConfigurationsCRUD.fetch(user)
 
     await CallbackMessages.edit(
         q=q,
         text="Select year from the list",
-        reply_markup=exist_dates_keyboard(date_format="%Y", callback_data=ExtraCallbackData.YEAR_SELECTED.value),
+        reply_markup=exist_dates_keyboard(
+            configuration=configuration,
+            date_format="%Y",
+            callback_data=ExtraCallbackData.YEAR_SELECTED.value,
+        ),
     )
 
 

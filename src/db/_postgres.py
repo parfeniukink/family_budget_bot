@@ -36,7 +36,7 @@ class Postgres:
                 connection.close()
 
     def __create_new_tables(self) -> None:
-        filename = SCRIPTS_DIR / "init_tables.sql"
+        filename = SCRIPTS_DIR / "db/init_tables.sql"
         with open(filename) as f:
             query = f.read()
         with self.cursor() as cursor:
@@ -76,7 +76,7 @@ class Postgres:
                 return self.__fetch_data_as_dict(data, cursor.description)
             return []
 
-    def fetch(self, table: str, column: str, value: Any) -> Optional[dict]:
+    def fetch(self, table: str, column: str, value: Any) -> list[dict]:
         value = value if str(value).isdigit() else "".join(("'", value, "'"))
         q = f"SELECT * FROM {table} WHERE {column} = {value}"
 
@@ -85,13 +85,27 @@ class Postgres:
             data: list[tuple] = cursor.fetchall()
             with suppress(IndexError):
                 results = self.__fetch_data_as_dict(data, cursor.description)
-                return results[0]
+                return results
+            return []
+
+    def fetchone(self, table: str, column: str, value: Any) -> Optional[dict]:
+        try:
+            return self.fetch(table=table, column=column, value=value)[0]
+        except IndexError:
             return None
 
     def insert(self, table: str, data: dict[str, Any]) -> dict:
         columns = ", ".join(str(k) for k in data.keys())
         values = ", ".join(
-            [v if v.isdigit() else "".join(["'", v, "'"]) for value in data.values() if (v := str(value))]
+            [
+                v
+                if v.isdigit()
+                else "".join(
+                    ["'", v, "'"],
+                )
+                for value in data.values()
+                if (v := str(value)) is not None
+            ]
         )
         q = f"INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING *"
 

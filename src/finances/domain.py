@@ -24,3 +24,12 @@ class Currencies(Enum):
             return cls.USD.name.lower()
 
         raise ValueError("Invalid currency")
+
+    @classmethod
+    def get_repr(cls, value: str) -> str:
+        if cls.UAH.name in value.upper():
+            return cls.UAH.value
+        if cls.USD.name in value.upper():
+            return cls.USD.value
+
+        raise ValueError("Invalid currency")

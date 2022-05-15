@@ -73,7 +73,7 @@ class DatesService(metaclass=DatesCache):
             raise BaseError("Currently we do not have any costs in database")
 
         if all([cls.FIRST_DATE.year == cls.LAST_DATE.year, cls.FIRST_DATE.month == cls.LAST_DATE.month]):
-            return list(cls.FIRST_DATE.strftime(date_format))
+            return [cls.FIRST_DATE.strftime(date_format)]
 
         data: list[str] = cls.__get_monthes_in_range(cls.FIRST_DATE, cls.LAST_DATE, date_format)
 

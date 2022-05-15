@@ -27,7 +27,10 @@ class Database(Protocol):
     def raw_execute(self, q: str) -> list[dict]:
         ...
 
-    def fetch(self, table: str, column: str, value: Any) -> Optional[dict]:
+    def fetch(self, table: str, column: str, value: Any) -> list[dict]:
+        ...
+
+    def fetchone(self, table: str, column: str, value: Any) -> Optional[dict]:
         ...
 
     def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:

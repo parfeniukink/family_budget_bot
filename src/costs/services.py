@@ -6,7 +6,7 @@ from operator import attrgetter
 from typing import Iterable, Optional
 
 from categories import CategoriesService, Category
-from configurations import ConfigurationsService
+from configurations import Configuration, ConfigurationsCRUD
 from costs.domain import Cost, CostsError, CostsStorage
 from db import database
 from equity import EquityCRUD
@@ -20,7 +20,7 @@ class CostsCRUD:
 
     @classmethod
     def get_by_id(cls, cost_id: str) -> Optional[Cost]:
-        data: Optional[dict] = database.fetch(cls.__TABLE, "id", cost_id)
+        data: Optional[dict] = database.fetchone(cls.__TABLE, "id", cost_id)
         return Cost(**data) if data else None
 
     @classmethod
@@ -29,7 +29,6 @@ class CostsCRUD:
 
 
 class CostsService:
-    __FULL_DATE_FROAMT = "%Y-%m-%d"
     __MONTHLY_DATE_FROAMT = "%Y-%m"
     __TABLE = "costs"
 
@@ -46,12 +45,12 @@ class CostsService:
             raise CostsError("One or more mandatory values are not set")
 
         user: User = UsersCRUD.fetch_by_account_id(storage.account_id)
-        default_currency: str = ConfigurationsService.get_by_name("default_currency").value
+        configuration: Configuration = ConfigurationsCRUD.fetch(user)
 
         payload = {
             "name": storage.description,
             "value": storage.value,
-            "currency": default_currency,
+            "currency": configuration.default_currency,
             "date": storage.date,
             "user_id": user.id,
             "category_id": storage.category.id,  # type: ignore

@@ -11,7 +11,6 @@ from costs.handlers import *  # noqa
 from equity.handlers import *  # noqa
 from incomes.handlers import *  # noqa
 from shared.handlers import *  # noqa
-from startup.handlers import *  # noqa
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 

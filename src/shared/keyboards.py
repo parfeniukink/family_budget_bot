@@ -44,8 +44,10 @@ def currencies_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
     from finances import Currencies
 
     keyboard = [
-        [types.InlineKeyboardButton(text=item.value, callback_data="".join((callback_data, item.name)))]
-        for item in Currencies
+        [
+            types.InlineKeyboardButton(text=item.value, callback_data="".join((callback_data, item.name)))
+            for item in Currencies
+        ]
     ]
     return types.InlineKeyboardMarkup(keyboard)
 

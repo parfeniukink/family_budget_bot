@@ -42,8 +42,11 @@ CREATE TABLE IF NOT EXISTS equity(
 
 CREATE TABLE IF NOT EXISTS configurations(
     id SERIAL PRIMARY KEY,
-    key VARCHAR(100) NOT NULL,
-    value VARCHAR(255)
+    default_currency VARCHAR(3) NOT NULL,
+    income_sources VARCHAR(255),
+    keyboard_dates_amount NUMERIC NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
 
@@ -66,14 +69,9 @@ INSERT INTO categories (name) VALUES
     ('💻 Technical stuff'),
     ('📚 Education'),
     ('🎁 Gifts'),
-    ('📦 Other');
+    ('📦 Other'),
     ('🔄 Currency transactions');
 
 INSERT INTO equity (currency, value) VALUES
     ('uah', 0.0),
     ('usd', 0.0);
-
-INSERT INTO configurations (key, value) VALUES
-    ('default_currency', 'uah'),
-    ('income_sources', 'Other');
-    ('keyboard_dates_amount', '10');

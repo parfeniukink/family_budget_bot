@@ -15,3 +15,6 @@ class User(Model):
     chat_id: int
     username: str
     full_name: str
+
+    def __hash__(self):
+        return self.id

@@ -71,6 +71,10 @@ class Enum(_Enum):
     def values(cls: Iterable) -> list:
         return [i.value for i in cls]
 
+    @classmethod
+    def names(cls: Iterable) -> list:
+        return [i.name for i in cls]
+
 
 @unique
 class IntEnum(_IntEnum):

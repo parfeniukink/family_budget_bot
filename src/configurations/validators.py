@@ -1,6 +1,10 @@
 from typing import Callable
 
-from configurations.domain import Configuration, ConfigurationError, Configurations
+from configurations.domain import (
+    ConfigurationError,
+    Configurations,
+    ConfigurationsStorage,
+)
 from shared.messages import BOLD, CODE
 
 
@@ -29,10 +33,10 @@ def validate_new_income_sources(value: str) -> None:
         raise ConfigurationError(message)
 
 
-def configurations_validator_dispatcher(configuration: Configuration) -> Callable[[str], None]:
-    if configuration.key == Configurations.KEYBOARD_DATES_AMOUNT.name.lower():
+def configurations_validator_dispatcher(storage: ConfigurationsStorage) -> Callable[[str], None]:
+    if storage.configuration_name == Configurations.KEYBOARD_DATES_AMOUNT.name.lower():
         return validate_new_dates_keyboard_len
-    elif configuration.key == Configurations.INCOME_SOURCES.name.lower():
+    elif storage.configuration_name == Configurations.INCOME_SOURCES.name.lower():
         return validate_new_income_sources
 
     return lambda _: None

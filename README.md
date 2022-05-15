@@ -155,10 +155,12 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ```
 
 ### Upgrade to the release 3 from the release 2
-💡 NOTE: it is a safe operation for moving to the individual configuration system
+💡 It is a safe operation for moving to the individual configuration system
    that is not realized in the 2 release.
 
-⚠️  WARNING: do not do this if you installed 3 release from the scratch
+📍 Make sure that you setted the `PYTHONPATH` in the `.env` file
+
+⚠️  Don't do this if you installed 3 release from the scratch
 
 ```python
 python scripts/db/release_3_migration.py

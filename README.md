@@ -1,14 +1,27 @@
 # Family budget Telegram bot
 
-</br>
-
 ✅ This is a family budget bot, developed for Telegram messenger
 
 ✅ Use it as collaboration tool to save costs and incomes
 
 ✅ Also, you can find pretty useful monthly or annually analytics
 
+## Table of content
+1. [Setup the environment](#setup-the-environment)
 
+2. [Setup the application](#setup-the-application)
+
+3. [Usage](#usage)
+
+4. [Additional information](#additional-information)
+
+    4.1 [Creating database dump cronjobs](#creating-database-dump-cronjobs)
+
+    4.2 [Restore from dump](#restore-from-dump)
+
+    4.3 [Upgrade to the release 3 from the release 2](#upgrade-to-the-release-3-from-the-release-2)
+
+4. [Images](#images)
 
 # Setup the environment
 
@@ -34,7 +47,7 @@ pre-commit install
 
 
 
-# Setup
+# Setup the application
 
 ### with Docker
 
@@ -140,6 +153,17 @@ Ingest data into database
 ```bash
 docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ```
+
+### Upgrade to the release 3 from the release 2
+💡 NOTE: it is a safe operation for moving to the individual configuration system
+   that is not realized in the 2 release.
+
+⚠️  WARNING: do not do this if you installed 3 release from the scratch
+
+```python
+python scripts/db/release_3_migration.py
+```
+
 
 # Images
 

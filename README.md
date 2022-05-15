@@ -163,7 +163,7 @@ docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ⚠️  Don't do this if you installed 3 release from the scratch
 
 ```python
-python scripts/db/release_3_migration.py
+docker-compose exec bot python scripts/db/release_3_migration.py
 ```
 
 

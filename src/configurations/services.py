@@ -1,3 +1,8 @@
+from contextlib import suppress
+from typing import Optional
+
+from loguru import logger
+
 from configurations.domain import (
     Configuration,
     ConfigurationError,
@@ -5,59 +10,93 @@ from configurations.domain import (
     ConfigurationsStorage,
 )
 from db import database
+from finances.domain import Currencies
 from shared.messages import LINE_ITEM
+from users.domain import User
+from users.services import UsersCRUD
 
-__all__ = ("ConfigurationsService",)
+__all__ = ("ConfigurationsService", "ConfigurationsCRUD")
 
 
-class ConfigurationsCache(type):
+class ConfigurationsCache:
+    _CONFIGURATIONS: dict[User, Configuration] = {}
+
+    @classmethod
+    def set(cls, user: User, configuration: Configuration):
+        cls._CONFIGURATIONS[user] = configuration
+
+    @classmethod
+    def get(cls, user: User) -> Optional[Configuration]:
+        with suppress(KeyError):
+            return cls._CONFIGURATIONS[user]
+        return None
+
+
+class ConfigurationsCRUD:
     __TABLE = "configurations"
 
     @classmethod
-    def get_configurations(cls) -> list[Configuration]:
-        return [Configuration(**item) for item in database.fetchall(cls.__TABLE)]
+    def fetch(cls, user: User) -> Configuration:
+        if cached_configuration := ConfigurationsCache.get(user):
+            return cached_configuration
 
-    def __getattr__(cls, attr):
-        if attr == "CACHED_CONFIGURATIONS":
-            data = cls.get_configurations()
-            setattr(cls, attr, data)
-            return data
-        raise AttributeError(attr)
+        data: Optional[dict] = database.fetchone(cls.__TABLE, column="user_id", value=user.id)
+        if not data:
+            raise ConfigurationError(
+                f"There is no configuration for user {user.username}. Please contact to developers"
+            )
 
+        configuration = Configuration(**data)
+        ConfigurationsCache.set(user, configuration)
 
-class ConfigurationsService(metaclass=ConfigurationsCache):
-    __TABLE = "configurations"
-    CACHED_CONFIGURATIONS: list[Configuration]
-
-    @classmethod
-    def get_by_name(cls, name: str) -> Configuration:
-        for configuration in cls.CACHED_CONFIGURATIONS:
-            if configuration.key == name:
-                return configuration
-        raise ConfigurationError(f"Can not find configuration {name} in database")
+        logger.debug("Configurations table injected")
+        return configuration
 
     @classmethod
-    def get_all_formatted(cls) -> str:
+    def update(cls, account_id: int, storage: ConfigurationsStorage) -> Configuration:
+        user = UsersCRUD.fetch_by_account_id(account_id)
+        if not storage.configuration_name or not storage.value:
+            raise ConfigurationError("Configuration update payload is not full")
+
+        update_data: dict = database.update(
+            cls.__TABLE,
+            data=(storage.configuration_name, storage.value),
+            condition=("user_id", user.id),  # type: ignore
+        )
+        configuration: Configuration = Configuration(**update_data)
+        ConfigurationsCache.set(user, configuration)
+
+        logger.debug("Configurations table injected")
+        return configuration
+
+    @classmethod
+    def startup_population(cls, user: User) -> Configuration:
+        payload = {
+            "default_currency": Currencies.get_database_value("UAH"),
+            "income_sources": "",
+            "keyboard_dates_amount": 5,
+            "user_id": user.id,
+        }
+        data: dict = database.insert(cls.__TABLE, payload)
+
+        configuration = Configuration(**data)
+        ConfigurationsCache.set(user, configuration)
+
+        logger.debug("Configurations table injected")
+        return configuration
+
+
+class ConfigurationsService:
+    @classmethod
+    def get_all_formatted(cls, account_id: int) -> str:
+        user: User = UsersCRUD.fetch_by_account_id(account_id)
+        configuration: Configuration = ConfigurationsCRUD.fetch(user)
+
         return "\n\n".join(
             (
                 [
-                    LINE_ITEM.format(key=getattr(Configurations, c.key.upper()).value, value=c.value)
-                    for c in cls.CACHED_CONFIGURATIONS
+                    LINE_ITEM.format(key=conf.value, value=getattr(configuration, conf.name.lower()))
+                    for conf in Configurations
                 ]
             )
         )
-
-    @classmethod
-    def update(cls, storage: ConfigurationsStorage) -> Configuration:
-        update_data: dict = database.update(
-            cls.__TABLE,
-            data=("value", storage.value),
-            condition=("key", storage.configuration.key),  # type: ignore
-        )
-        configuration = Configuration(**update_data)
-
-        for c in cls.CACHED_CONFIGURATIONS:
-            if c.id == configuration.id:
-                c.value = configuration.value
-
-        return configuration

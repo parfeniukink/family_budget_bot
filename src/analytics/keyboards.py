@@ -21,9 +21,9 @@ def analytics_periods_keyboard():
 def analytics_detail_levels_keyboard() -> types.InlineKeyboardMarkup:
     keyboard = [
         [
-            types.InlineKeyboardButton(text=item.name, callback_data=item.callback_data),
+            types.InlineKeyboardButton(text=item.name, callback_data=item.callback_data)
+            for item in AnalyticsDetailLevels.values()
         ]
-        for item in AnalyticsDetailLevels.values()
     ]
     return types.InlineKeyboardMarkup(keyboard)
 

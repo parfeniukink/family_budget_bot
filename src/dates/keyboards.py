@@ -3,16 +3,12 @@ from itertools import islice
 
 from telebot import types
 
-from configurations import Configuration, Configurations, ConfigurationsService
+from configurations import Configuration
 from dates.services import DatesService
 
 
-def dates_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
-    DATES_KEYBOARD_AMOUNT: Configuration = ConfigurationsService.get_by_name(
-        Configurations.KEYBOARD_DATES_AMOUNT.name.lower()
-    )
-
-    dates = (date.today() - timedelta(days=i) for i in range(int(DATES_KEYBOARD_AMOUNT.value)))
+def dates_keyboard(configuration: Configuration, callback_data: str) -> types.InlineKeyboardMarkup:
+    dates = (date.today() - timedelta(days=i) for i in range(configuration.keyboard_dates_amount))
 
     keyboard = [
         [
@@ -27,13 +23,14 @@ def dates_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup(keyboard)
 
 
-def exist_dates_keyboard(*_, date_format: str = "%Y-%m", callback_data: str) -> types.InlineKeyboardMarkup:
-    DATES_KEYBOARD_AMOUNT: Configuration = ConfigurationsService.get_by_name(
-        Configurations.KEYBOARD_DATES_AMOUNT.name.lower()
-    )
-
+def exist_dates_keyboard(
+    *_, configuration: Configuration, date_format: str = "%Y-%m", callback_data: str
+) -> types.InlineKeyboardMarkup:
     keyboard = [
         [types.InlineKeyboardButton(text=fdate, callback_data="".join((callback_data, fdate)))]
-        for fdate in islice(DatesService.get_formatted_dates(date_format), int(DATES_KEYBOARD_AMOUNT.value))
+        for fdate in islice(
+            DatesService.get_formatted_dates(date_format),
+            configuration.keyboard_dates_amount,
+        )
     ]
     return types.InlineKeyboardMarkup(keyboard)

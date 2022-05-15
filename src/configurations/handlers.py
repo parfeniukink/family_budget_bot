@@ -15,7 +15,7 @@ from configurations.keyboards import (
     configurations_edit_keyboard,
     configurations_keyboard,
 )
-from configurations.services import ConfigurationsService
+from configurations.services import ConfigurationsCRUD, ConfigurationsService
 from configurations.validators import configurations_validator_dispatcher
 from finances.domain import Currencies
 from settings import DEFAULT_SEND_SETTINGS
@@ -36,7 +36,7 @@ __all__ = ("configurations",)
 @base_error_handler
 async def confirmation_selected_callback_query(q: types.CallbackQuery):
     storage = ConfigurationsStorage(q.from_user.id)
-    storage.check_fields("configuration", "value")
+    storage.check_fields("configuration_name", "value")
     result = q.data.replace(ExtraCallbackData.CONFIRMATION_SELECTED.value, "")
 
     storage.trash_messages.add(q.message.id)
@@ -46,13 +46,14 @@ async def confirmation_selected_callback_query(q: types.CallbackQuery):
             await bot.delete_message(chat_id=q.message.chat.id, message_id=message)
 
     if result == ConfirmationOptions.YES.value:
-        configuration: Configuration = ConfigurationsService.update(storage)
-        configuration_repr: Configurations = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
+        configuration: Configuration = ConfigurationsCRUD.update(account_id=q.from_user.id, storage=storage)
+        configuration_repr: Configurations = getattr(Configurations, storage.configuration_name.upper())  # type: ignore
+        new_value = getattr(configuration, storage.configuration_name)  # type:ignore
 
         text = "\n\n".join(
             (
                 "✅ Configuration saved",
-                f"{configuration_repr.value} 👉 {configuration.value}",
+                f"{configuration_repr.value} 👉 {new_value}",
             )
         )
         await bot.send_message(
@@ -73,9 +74,9 @@ async def confirmation_selected_callback_query(q: types.CallbackQuery):
 @base_error_handler
 async def value_entered_callback(m: types.Message):
     storage = ConfigurationsStorage(m.from_user.id)
-    storage.check_fields("configuration", "value")
+    storage.check_fields("configuration_name", "value")
     storage.trash_messages.add(m.id)
-    configuration_repr = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
+    configuration_repr = getattr(Configurations, storage.configuration_name.upper())  # type: ignore
 
     text = "\n\n".join(
         (
@@ -95,11 +96,11 @@ async def value_entered_callback(m: types.Message):
 @base_error_handler
 async def currency_selected_callback_query(q: types.CallbackQuery):
     storage = ConfigurationsStorage(q.from_user.id)
-    storage.check_fields("configuration")
+    storage.check_fields("configuration_name")
 
     result = q.data.replace(ExtraCallbackData.CURRENCY_SELECTED.value, "")
     storage.value = Currencies.get_database_value(result)
-    configuration_repr = getattr(Configurations, storage.configuration.key.upper())  # type: ignore
+    configuration_repr = getattr(Configurations, storage.configuration_name.upper())  # type: ignore
     currency = getattr(Currencies, storage.value.upper())  # type: ignore
 
     text = "\n\n".join(
@@ -122,10 +123,10 @@ async def currency_selected_callback_query(q: types.CallbackQuery):
 async def configuration_selected_callback_query(q: types.CallbackQuery):
     storage = ConfigurationsStorage(q.from_user.id)
     state = State(q.from_user.id)
-    configuration_name = q.data.replace(ExtraCallbackData.CONFIGURATION_SELECTED.value, "").lower()
-    storage.configuration = ConfigurationsService.get_by_name(configuration_name)
+    storage.configuration_name = q.data.replace(ExtraCallbackData.CONFIGURATION_SELECTED.value, "").lower()
 
-    if configuration_name == Configurations.DEFAULT_CURRENCY.name.lower():
+    # NOTE: if user selects the default currency configuration the bot shows 2 buttons with possible options
+    if storage.configuration_name == Configurations.DEFAULT_CURRENCY.name.lower():
         return await CallbackMessages.edit(
             q=q,
             text="Please select currency",
@@ -138,7 +139,7 @@ async def configuration_selected_callback_query(q: types.CallbackQuery):
     state.set(
         storage=storage,
         key="value",
-        validator=configurations_validator_dispatcher(storage.configuration),
+        validator=configurations_validator_dispatcher(storage),
         callback=value_entered_callback,
     )
 
@@ -167,7 +168,7 @@ async def edit_configurations_selected_callback_query(q: types.CallbackQuery):
 @bot.callback_query_handler(func=lambda c: c.data == ConfigurationsMenu.GET_ALL.value.callback_data)
 @base_error_handler
 async def get_all_configurations_selected_callback_query(q: types.CallbackQuery):
-    configurations = ConfigurationsService.get_all_formatted()
+    configurations = ConfigurationsService.get_all_formatted(q.from_user.id)
 
     await CallbackMessages.delete(q)
     await bot.send_message(

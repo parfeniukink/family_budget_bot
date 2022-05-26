@@ -14,6 +14,8 @@ from shared.handlers import *  # noqa
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+logger.add("fbb.log", rotation="50 MB")
+
 
 async def start_bot():
     try:

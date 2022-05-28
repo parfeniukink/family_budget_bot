@@ -72,7 +72,7 @@ class ConfigurationsCRUD:
     @classmethod
     def startup_population(cls, user: User) -> Configuration:
         payload = {
-            "default_currency": Currencies.get_database_value("UAH"),
+            "default_currency": Currencies.get_database_value("BYN"),
             "income_sources": "",
             "keyboard_dates_amount": 5,
             "user_id": user.id,

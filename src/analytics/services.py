@@ -121,24 +121,24 @@ class AnalitycsService:
         incomes: dict[str, list[Income]],
     ) -> str:
         message = BOLD.format(text=date)
-        uah_title = CURRENCY_REPORT_TITLE_MESSAGE.format(currency=Currencies.UAH.value)
+        byn_title = CURRENCY_REPORT_TITLE_MESSAGE.format(currency=Currencies.BYN.value)
         usd_title = CURRENCY_REPORT_TITLE_MESSAGE.format(currency=Currencies.USD.value)
 
-        uah_costs_message = cls.__get_formatted_costs_by_currency_basic(
-            categories_by_id, costs.get(Currencies.get_database_value("UAH"))
+        byn_costs_message = cls.__get_formatted_costs_by_currency_basic(
+            categories_by_id, costs.get(Currencies.get_database_value("BYN"))
         )
         usd_costs_message = cls.__get_formatted_costs_by_currency_basic(
             categories_by_id, costs.get(Currencies.get_database_value("USD"))
         )
 
-        uah_salary_incomes_message = IncomesService.get_formatted_incomes(
-            [i for i in incomes.get(Currencies.get_database_value("UAH"), []) if i.salary], INCOME_SALARY_SOURCE_MESSAGE
+        byn_salary_incomes_message = IncomesService.get_formatted_incomes(
+            [i for i in incomes.get(Currencies.get_database_value("BYN"), []) if i.salary], INCOME_SALARY_SOURCE_MESSAGE
         )
         usd_salary_incomes_message = IncomesService.get_formatted_incomes(
             [i for i in incomes.get(Currencies.get_database_value("USD"), []) if i.salary], INCOME_SALARY_SOURCE_MESSAGE
         )
-        uah_other_incomes_message = IncomesService.get_formatted_incomes(
-            [i for i in incomes.get(Currencies.get_database_value("UAH"), []) if not i.salary],
+        byn_other_incomes_message = IncomesService.get_formatted_incomes(
+            [i for i in incomes.get(Currencies.get_database_value("BYN"), []) if not i.salary],
             INCOME_OTHER_SOURCE_MESSAGE,
         )
         usd_other_incomes_message = IncomesService.get_formatted_incomes(
@@ -146,8 +146,8 @@ class AnalitycsService:
             INCOME_OTHER_SOURCE_MESSAGE,
         )
 
-        if uah_costs_message or uah_salary_incomes_message:
-            message += "\n".join([uah_title, uah_costs_message, uah_salary_incomes_message, uah_other_incomes_message])
+        if byn_costs_message or byn_salary_incomes_message:
+            message += "\n".join([byn_title, byn_costs_message, byn_salary_incomes_message, byn_other_incomes_message])
 
         if usd_costs_message or usd_salary_incomes_message:
             message += "\n".join([usd_title, usd_costs_message, usd_salary_incomes_message, usd_other_incomes_message])
@@ -171,7 +171,7 @@ class AnalitycsService:
 
         report = [
             *cls.__get_detailed_costs(
-                categories_by_id, costs.get(Currencies.get_database_value("UAH")), Currencies.UAH.value
+                categories_by_id, costs.get(Currencies.get_database_value("BYN")), Currencies.BYN.value
             ),
             *cls.__get_detailed_costs(
                 categories_by_id, costs.get(Currencies.get_database_value("USD")), Currencies.USD.value
@@ -180,15 +180,15 @@ class AnalitycsService:
 
         if not category:
             cached_users: dict[int, User] = {}
-            uah_incomes: str = IncomesService.get_detailed_incomes_message(
-                cached_users, incomes.get(Currencies.get_database_value("UAH"))
+            byn_incomes: str = IncomesService.get_detailed_incomes_message(
+                cached_users, incomes.get(Currencies.get_database_value("BYN"))
             )
             usd_incomes: str = IncomesService.get_detailed_incomes_message(
                 cached_users, incomes.get(Currencies.get_database_value("USD"))
             )
 
             incomes_message = "\n".join(
-                ["".join((BOLD.format(text=REPORT_INCOMES_TITLE), "\n")), uah_incomes, usd_incomes]
+                ["".join((BOLD.format(text=REPORT_INCOMES_TITLE), "\n")), byn_incomes, usd_incomes]
             )
             report.append(incomes_message)
 

@@ -16,5 +16,5 @@ with database.cursor() as cursor:
         cursor.execute(
             f"INSERT INTO configurations "
             f"(default_currency, keyboard_dates_amount, user_id) "
-            f"VALUES ('uah', 5, {user['id']})"
+            f"VALUES ('byn', 5, {user['id']})"
         )

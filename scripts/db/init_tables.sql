@@ -73,5 +73,5 @@ INSERT INTO categories (name) VALUES
     ('🔄 Currency transactions');
 
 INSERT INTO equity (currency, value) VALUES
-    ('uah', 0.0),
+    ('byn', 0.0),
     ('usd', 0.0);

@@ -9,7 +9,7 @@ class Operations(Enum):
 
 
 class Currencies(Enum):
-    UAH = "🇺🇦 UAH 🇺🇦"
+    BYN = "🇧🇾 BYN 🇧🇾"
     USD = "🇺🇸 USD 🇺🇸"
 
     @classmethod
@@ -18,8 +18,8 @@ class Currencies(Enum):
 
     @classmethod
     def get_database_value(cls, value: str) -> str:
-        if cls.UAH.name in value.upper():
-            return cls.UAH.name.lower()
+        if cls.BYN.name in value.upper():
+            return cls.BYN.name.lower()
         if cls.USD.name in value.upper():
             return cls.USD.name.lower()
 
@@ -27,8 +27,8 @@ class Currencies(Enum):
 
     @classmethod
     def get_repr(cls, value: str) -> str:
-        if cls.UAH.name in value.upper():
-            return cls.UAH.value
+        if cls.BYN.name in value.upper():
+            return cls.BYN.value
         if cls.USD.name in value.upper():
             return cls.USD.value
 

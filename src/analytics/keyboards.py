@@ -30,6 +30,16 @@ def analytics_detail_levels_keyboard() -> types.InlineKeyboardMarkup:
 
 def analytics_detail_level_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
     markup = categories_keyboard(callback_data)
+
+    # NOTE: Add `Only incomes` button
+    markup.add(
+        types.InlineKeyboardButton(
+            text=DetailReportExtraOptions.INCOMES.value.name,
+            callback_data="".join((callback_data, DetailReportExtraOptions.INCOMES.value.name)),
+        )
+    )
+
+    # NOTE: Add `All categories` button
     markup.add(
         types.InlineKeyboardButton(
             text=DetailReportExtraOptions.ALL.value.name,

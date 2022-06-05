@@ -11,7 +11,7 @@ class AnalyticsError(BaseError):
 
 
 class AnalyticsGeneralMenu(Enum):
-    ANALYTICS = "Analytics 📈"
+    ANALYTICS = "Analytics 📊"
 
 
 class ExtraCallbackData(Enum):

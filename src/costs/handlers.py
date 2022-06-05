@@ -220,7 +220,8 @@ async def del_category_selected_callback_query(q: types.CallbackQuery):
     filtered_costs = [cost for cost in storage.costs if cost.category_id == storage.category.id]
 
     if not filtered_costs:
-        await CallbackMessages.edit(q=q, text="✅ No costs in this category")
+        await CallbackMessages.edit(q=q, text="✅ No costs in this category", reply_markup=default_keyboard()),
+
     else:
         await CallbackMessages.edit(
             q=q,

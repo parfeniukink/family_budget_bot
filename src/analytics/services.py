@@ -190,7 +190,7 @@ class AnalitycsService:
         return message
 
     @classmethod
-    def get_monthly_detailed_report(cls, month: str, category: Optional[Category] = None) -> Iterable[str]:
+    def get_monthly_detailed_report(cls, month: str, category: Optional[Category] = None) -> list[str]:
         """
         This is a general interface to get monthly costs and incomes analytics
         Return the list of costs by category with headers.

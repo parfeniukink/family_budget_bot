@@ -31,7 +31,8 @@ class AnalyticsDetailLevels(Enum):
 
 
 class DetailReportExtraOptions(Enum):
-    ALL = CallbackItem(name="🚛 All")
+    INCOMES = CallbackItem(name="📈 Only incomes")
+    ALL = CallbackItem(name="🚛 All categories")
 
 
 class AnalyticsStorage(Storage):

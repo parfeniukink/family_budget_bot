@@ -14,6 +14,7 @@ from analytics.keyboards import (
     analytics_detail_levels_keyboard,
     analytics_periods_keyboard,
 )
+from analytics.messages import REPORT_INCOMES_TITLE
 from analytics.services import AnalitycsService
 from bot import CallbackMessages, bot
 from categories import CategoriesService
@@ -22,8 +23,7 @@ from dates import exist_dates_keyboard
 from settings import DEFAULT_SEND_SETTINGS
 from shared.domain import base_error_handler, restart_handler
 from shared.messages import MESSAGE_DEPRICATED
-from users import UsersService
-from users.services import UsersCRUD
+from users import UsersCRUD, UsersService
 
 __all__ = ("analytics",)
 
@@ -48,6 +48,17 @@ async def category_selected_callback_query(q: types.CallbackQuery):
         reports = AnalitycsService.get_monthly_detailed_report(storage.date)
         for report in reports:
             await bot.send_message(q.message.chat.id, text=report, **DEFAULT_SEND_SETTINGS)
+    elif category_name == DetailReportExtraOptions.INCOMES.value.name:
+        reports = AnalitycsService.get_monthly_detailed_report(storage.date)
+        try:
+            incomes_message = reports[-1]
+
+            if REPORT_INCOMES_TITLE not in incomes_message:
+                raise AnalyticsError("No incomes in report")
+        except IndexError:
+            return await bot.send_message(q.message.chat.id, text="Nothing to show", **DEFAULT_SEND_SETTINGS)
+
+        await bot.send_message(q.message.chat.id, text=incomes_message, **DEFAULT_SEND_SETTINGS)
     else:
         category = CategoriesService.get_by_name(category_name)
         reports = AnalitycsService.get_monthly_detailed_report(storage.date, category)

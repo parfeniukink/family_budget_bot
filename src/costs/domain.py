@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date
 from decimal import Decimal
 from typing import Optional, Union
@@ -25,13 +27,13 @@ class Cost(Model):
     def __str__(self) -> str:
         return self.name
 
-    def __add_costs_with_same_currency(self, other: "Cost") -> Decimal:
+    def __add_costs_with_same_currency(self, other: Cost) -> Decimal:
         return self.value + other.value
 
     def __add_cost_and_decimal(self, other: Decimal) -> Decimal:
         return self.value + other
 
-    def __add__(self, other: Union["Cost", Decimal, int]) -> Decimal:
+    def __add__(self, other: Union[Cost, Decimal, int]) -> Decimal:
         if isinstance(other, Cost) and other.currency == self.currency:
             return self.__add_costs_with_same_currency(other)
         elif isinstance(other, Cost) and other.currency is not self.currency:
@@ -42,10 +44,10 @@ class Cost(Model):
             return self.__add_cost_and_decimal(Decimal(str(other)))
         raise CostsError()
 
-    def __radd__(self, other: Union["Cost", Decimal]) -> Decimal:
+    def __radd__(self, other: Union[Cost, Decimal]) -> Decimal:
         return self.__add__(other)
 
-    def __sub__(self, other: Union["Cost", Decimal]) -> Decimal:
+    def __sub__(self, other: Union[Cost, Decimal]) -> Decimal:
         if isinstance(other, Cost):
             other.value = -other.value
         elif isinstance(other, Decimal):

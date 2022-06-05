@@ -83,7 +83,7 @@ class IncomesService:
         return result
 
     @classmethod
-    def get_formatted_incomes(cls, incomes: Optional[list[Income]], title="Total incomes") -> str:
+    def get_formatted_incomes(cls, incomes: Optional[list[Income]], title="📈 Total incomes") -> str:
         if not incomes:
             return ""
 

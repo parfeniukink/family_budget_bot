@@ -2,5 +2,5 @@
 
 cd ~/family_budget_bot/
 
-git pull origin main
+git pull origin master
 docker-compose restart bot

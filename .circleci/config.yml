@@ -23,7 +23,7 @@ jobs:
       - image: arvindr226/alpine-ssh
     steps:
       - checkout
-      - run: ssh -oStrictHostKeyChecking=no -v $USER@$IP "chmod 777 ~/family_budget_bot/scripts/deploy.sh && ~/family_budget_bot/scripts/deploy.sh"
+      - run: ssh -oStrictHostKeyChecking=no -v $USER@$IP "~/family_budget_bot/scripts/deploy.sh"
           
 
 workflows:

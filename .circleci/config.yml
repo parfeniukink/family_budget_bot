@@ -17,9 +17,23 @@ jobs:
       - run:
           name: Check formatting
           command: poetry run black --check ./ && poetry run isort --check-only ./
+
+  deploy:
+    docker:
+      - image: arvindr226/alpine-ssh
+    steps:
+      - checkout
+      - run: ssh -oStrictHostKeyChecking=no -v $USER@$IP "~/family_budget_bot/scripts/deploy.sh"
           
 
 workflows:
   sample:
     jobs:
       - build-and-test
+      - deploy:
+        requires:
+          - build-and-test
+        filters:
+          branches:
+            only: main
+

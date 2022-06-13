@@ -1,5 +1,5 @@
 from contextlib import contextmanager, suppress
-from typing import Any, Optional
+from typing import Any
 
 import psycopg2
 from loguru import logger
@@ -66,7 +66,7 @@ class Postgres:
             data = cursor.fetchall()
         return [{k[0]: v for k, v in zip(cursor.description, d)} for d in data]
 
-    def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
+    def fetchall(self, table: str, columns: str | None = None) -> list[dict]:
         q = f"SELECT {columns or '*'} FROM {table}"
 
         with self.cursor() as cursor:
@@ -88,7 +88,7 @@ class Postgres:
                 return results
             return []
 
-    def fetchone(self, table: str, column: str, value: Any) -> Optional[dict]:
+    def fetchone(self, table: str, column: str, value: Any) -> dict | None:
         try:
             return self.fetch(table=table, column=column, value=value)[0]
         except IndexError:

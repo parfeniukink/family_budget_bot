@@ -1,11 +1,9 @@
-from typing import Optional
-
 from shared.domain import BaseError, CallbackItem, Enum, random_uuid
 from storages import Storage
 
 
 class AnalyticsError(BaseError):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Analytics Error"
         super().__init__(message, *args, **kwargs)
 
@@ -45,6 +43,6 @@ class AnalyticsStorage(Storage):
             return
 
         super().__init__(account_id)
-        self.option: Optional[AnalyticsOptions] = None
-        self.date: Optional[str] = None
-        self.detail_level: Optional[AnalyticsDetailLevels] = None
+        self.option: AnalyticsOptions | None = None
+        self.date: str | None = None
+        self.detail_level: AnalyticsDetailLevels | None = None

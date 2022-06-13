@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Iterable, Optional
+from typing import Iterable
 
 from loguru import logger
 
@@ -14,7 +14,7 @@ class DatesCache(type):
     COSTS_TABLE = "costs"
 
     @classmethod
-    def get_dates(cls) -> Optional[tuple[date, date]]:
+    def get_dates(cls) -> tuple[date, date] | None:
         first_date = database.raw_execute(f"SELECT date from {cls.COSTS_TABLE} ORDER BY date ASC LIMIT 1")[0]["date"]
         last_date = database.raw_execute(f"SELECT date from {cls.COSTS_TABLE} ORDER BY date DESC LIMIT 1")[0]["date"]
         try:
@@ -23,7 +23,7 @@ class DatesCache(type):
             return None
 
     @classmethod
-    def set_dates(cls) -> Optional[tuple[date, date]]:
+    def set_dates(cls) -> tuple[date, date] | None:
         dates = cls.get_dates()
 
         if not dates:
@@ -79,6 +79,6 @@ class DatesService(metaclass=DatesCache):
 
         if not date.today().strftime(date_format) in data:
             DatesCache.set_dates()
-            data: list[str] = cls.__get_monthes_in_range(cls.FIRST_DATE, cls.LAST_DATE, date_format)
+            data = cls.__get_monthes_in_range(cls.FIRST_DATE, cls.LAST_DATE, date_format)
 
         return without_duplicates(data)

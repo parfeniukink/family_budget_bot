@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from typing import Optional, Union
+from typing import Union
 
 from shared.domain import BaseError, Enum, Model, random_uuid
 from storages import Storage
@@ -11,7 +11,7 @@ class IncomesGeneralMenu(Enum):
 
 
 class IncomesError(BaseError):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Adding incomes error"
         super().__init__(message, *args, **kwargs)
 
@@ -77,8 +77,8 @@ class IncomesStorage(Storage):
             return
 
         super().__init__(account_id)
-        self.value: Optional[str] = None
-        self.description: Optional[str] = None
-        self.date: Optional[date] = None
-        self.currency: Optional[str] = None
-        self.salary: Optional[bool] = None
+        self.value: str | None = None
+        self.description: str | None = None
+        self.date: date | None = None
+        self.currency: str | None = None
+        self.salary: bool | None = None

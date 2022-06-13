@@ -1,10 +1,8 @@
-from typing import Optional
-
 from shared.domain import BaseError, Enum, Model
 
 
 class CategoriesError(BaseError):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "No such category"
         super().__init__(message, *args, **kwargs)
 

@@ -1,4 +1,4 @@
-from typing import Any, ContextManager, Optional, Protocol
+from typing import Any, ContextManager, Protocol
 
 from db.domain import ConnectionData
 
@@ -30,10 +30,10 @@ class Database(Protocol):
     def fetch(self, table: str, column: str, value: Any) -> list[dict]:
         ...
 
-    def fetchone(self, table: str, column: str, value: Any) -> Optional[dict]:
+    def fetchone(self, table: str, column: str, value: Any) -> dict | None:
         ...
 
-    def fetchall(self, table: str, columns: Optional[str] = None) -> list[dict]:
+    def fetchall(self, table: str, columns: str | None = None) -> list[dict]:
         ...
 
     def insert(self, table: str, data: dict[str, Any]) -> dict:

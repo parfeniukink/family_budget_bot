@@ -1,6 +1,6 @@
 from contextlib import suppress
 from functools import wraps
-from typing import Callable, Optional
+from typing import Callable
 
 from loguru import logger
 from telebot import types
@@ -21,7 +21,7 @@ class UsersCache:
         cls._USERS[key] = value
 
     @classmethod
-    def get(cls, key) -> Optional[User]:
+    def get(cls, key) -> User | None:
         with suppress(KeyError):
             return cls._USERS[key]
         return None
@@ -31,7 +31,7 @@ class UsersCRUD:
     USERS_TABLE = "users"
 
     @classmethod
-    def fetch_by_id(cls, id: int) -> Optional[User]:
+    def fetch_by_id(cls, id: int) -> User | None:
         if cache_user := UsersCache.get(id):
             return cache_user
 
@@ -67,7 +67,7 @@ class UsersCRUD:
     def save_user(cls, m: types.Message) -> tuple[User, bool]:
         """Return user instance and created information"""
         with suppress(UsersError):
-            user: Optional[User] = cls.fetch_by_account_id(m.from_user.id)
+            user: User = cls.fetch_by_account_id(m.from_user.id)
             return user, False
 
         payload = {

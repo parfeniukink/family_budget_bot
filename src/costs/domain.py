@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Optional, Union
+from typing import Union
 
 from categories.domain import Category
 from shared.domain import BaseError, Enum, Model, random_uuid
@@ -10,7 +10,7 @@ from storages import Storage
 
 
 class CostsError(BaseError):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Adding costs error"
         super().__init__(message, *args, **kwargs)
 
@@ -82,9 +82,9 @@ class CostsStorage(Storage):
             return
 
         super().__init__(account_id)
-        self.value: Optional[str] = None
-        self.description: Optional[str] = None
-        self.date: Optional[date] = None
-        self.costs: Optional[list[Cost]] = None
-        self.category: Optional[Category] = None
-        self.delete_id: Optional[str] = None
+        self.value: str | None = None
+        self.description: str | None = None
+        self.date: date | None = None
+        self.costs: list[Cost] | None = None
+        self.category: Category | None = None
+        self.delete_id: str | None = None

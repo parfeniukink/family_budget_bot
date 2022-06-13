@@ -1,10 +1,10 @@
 import re
 from os import getenv
-from typing import Any, Optional
+from typing import Any
 
 
 class EnvironmentError(Exception):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Can not parse the environment"
         super().__init__(message, *args, **kwargs)
 
@@ -36,18 +36,18 @@ class Env:
         )
         result = re.search(DB_REGEX, getenv(value, default))
 
-        if not result:
+        if result is None:
             raise EnvironmentError(f"Can not translate {value} into the database URL")
 
         return result.groupdict()
 
     @staticmethod
-    def int(value: str, default: int = None) -> int:
+    def int(value: str, default: int | None = None) -> int:
         try:
             return int(str(getenv(value, default)))
         except ValueError as err:
             raise EnvironmentError(str(err))
 
     @staticmethod
-    def str(value: str, default: str = None) -> str:
+    def str(value: str, default: str | None = None) -> str:
         return str(getenv(value, default))

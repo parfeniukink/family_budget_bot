@@ -1,7 +1,7 @@
 from decimal import Decimal
 from itertools import groupby
 from operator import attrgetter
-from typing import Iterable, Optional
+from typing import Iterable
 
 from analytics.messages import (
     CURRENCY_REPORT_TITLE_MESSAGE,
@@ -27,7 +27,7 @@ class AnalitycsService:
 
     @classmethod
     def __get_formatted_costs_by_currency_basic(
-        cls, categories_by_id: dict[int, Category], costs: Optional[list[Cost]]
+        cls, categories_by_id: dict[int, Category], costs: list[Cost] | None
     ) -> str:
         text = ""
 
@@ -83,7 +83,8 @@ class AnalitycsService:
                     LINE_ITEM.format(
                         key=BOLD.format(text="🔄 Currency transactions"),
                         value=get_number_in_frames(
-                            sum(currency_transaction_costs),  # type: ignore Note: sum() always return Decimal for costs
+                            # NOTE: sum() always return Decimal for costs
+                            sum(currency_transaction_costs),  # type: ignore
                         ),
                     ),
                     sign,
@@ -97,7 +98,7 @@ class AnalitycsService:
 
     @classmethod
     def __get_formatted_costs_by_currency_detailed(
-        cls, categories_by_id: dict[int, Category], costs: Optional[list[Cost]]
+        cls, categories_by_id: dict[int, Category], costs: list[Cost] | None = None
     ) -> list[str]:
         report: list[str] = []
 
@@ -130,7 +131,7 @@ class AnalitycsService:
 
     @classmethod
     def __get_detailed_costs(
-        cls, categories_by_id: dict[int, Category], costs: Optional[list[Cost]], header: str
+        cls, categories_by_id: dict[int, Category], costs: list[Cost] | None, header: str
     ) -> list[str]:
         """Return costs by category in readable format"""
 
@@ -190,7 +191,7 @@ class AnalitycsService:
         return message
 
     @classmethod
-    def get_monthly_detailed_report(cls, month: str, category: Optional[Category] = None) -> list[str]:
+    def get_monthly_detailed_report(cls, month: str, category: Category | None = None) -> list[str]:
         """
         This is a general interface to get monthly costs and incomes analytics
         Return the list of costs by category with headers.

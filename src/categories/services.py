@@ -1,5 +1,3 @@
-from typing import Optional
-
 from categories.domain import CategoriesError, Category
 from db import database
 
@@ -31,7 +29,7 @@ class CategoriesService(metaclass=CategoriesCache):
         raise CategoriesError()
 
     @classmethod
-    def get_by_id(cls, id: int) -> Optional[Category]:
+    def get_by_id(cls, id: int) -> Category | None:
         for category in cls.CACHED_CATEGORIES:
             if category.id == id:
                 return category

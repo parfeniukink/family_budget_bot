@@ -1,5 +1,3 @@
-from typing import Optional
-
 from shared.domain import BaseError, CallbackItem, Enum, Model, random_uuid
 from storages import Storage
 
@@ -9,7 +7,7 @@ class ConfigurationsGeneralMenu(Enum):
 
 
 class ConfigurationError(BaseError):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Configuration error"
         super().__init__(message, *args, **kwargs)
 
@@ -25,16 +23,17 @@ class Configurations(Enum):
     KEYBOARD_DATES_AMOUNT = "The amount of dates in keyboard"
 
     @classmethod
-    def get_instance_by_value(cls, val: str) -> Optional[Enum]:
+    def get_instance_by_value(cls, val: str) -> Enum | None:
         for el in cls:
             if el.value == val:
                 return el
+        return None
 
 
 class Configuration(Model):
     id: int
     default_currency: str
-    income_sources: Optional[str]
+    income_sources: str | None
     keyboard_dates_amount: int
     user_id: int
 
@@ -53,5 +52,5 @@ class ConfigurationsStorage(Storage):
             return
 
         super().__init__(account_id)
-        self.configuration_name: Optional[str] = None
-        self.value: Optional[str] = None
+        self.configuration_name: str | None = None
+        self.value: str | None = None

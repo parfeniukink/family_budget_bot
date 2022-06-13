@@ -1,8 +1,6 @@
 from decimal import Decimal
-from typing import Optional, Union
+from typing import Union
 
 
-def get_number_in_frames(num: Optional[Union[int, float, Decimal]]) -> str:
-    if not num:
-        return ""
-    return "{0:,}".format(num).replace(",", " ")
+def get_number_in_frames(num: Union[int, float, Decimal] | None = None) -> str:
+    return "{0:,}".format(num).replace(",", " ") if num is not None else ""

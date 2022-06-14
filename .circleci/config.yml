@@ -13,10 +13,13 @@ jobs:
           pkg-manager: poetry
       - run:
           name: Run linter
-          command: poetry run flake8 ./
+          command: poetry run flake8 .
       - run:
           name: Check formatting
-          command: poetry run black --check ./ && poetry run isort --check-only ./
+          command: poetry run black --check . && poetry run isort --check-only .
+      - run:
+          name: Check types
+          command: poetry run mypy .
 
   deploy:
     docker:

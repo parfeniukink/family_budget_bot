@@ -2,7 +2,7 @@ from enum import Enum as _Enum
 from enum import IntEnum as _IntEnum
 from enum import unique
 from functools import wraps
-from typing import Callable, Generator, Iterable, Optional, Union
+from typing import Callable, Generator, Iterable, Union
 from uuid import uuid4
 
 from loguru import logger
@@ -17,7 +17,7 @@ from shared.messages import RESTART
 
 
 class BaseError(Exception):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Adding costs error"
         super().__init__(message, *args, **kwargs)
 
@@ -45,7 +45,7 @@ def base_error_handler(coro: Callable) -> Callable:
     """
 
     @wraps(coro)
-    async def inner(m: Union[types.Message, types.CallbackQuery], *args, **kwargs) -> Optional[types.Message]:
+    async def inner(m: Union[types.Message, types.CallbackQuery], *args, **kwargs) -> types.Message | None:
 
         regular_message = isinstance(m, types.Message)
         chat_id = m.chat.id if regular_message else m.message.chat.id

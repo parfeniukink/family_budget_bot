@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from loguru import logger
 
@@ -7,7 +7,7 @@ from shared.messages import MESSAGE_DEPRICATED
 
 
 class StorageError(BaseError):
-    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:
+    def __init__(self, message: str | None = None, *args, **kwargs) -> None:
         message = message or "Storage error"
         super().__init__(message, *args, **kwargs)
 
@@ -24,8 +24,8 @@ class Storage:
            ...:     def __init__(self, account_id: int, *_, **__):
            ...:         if getattr(self, "__initialized", False):
            ...:             return
-           ...:         self.field_1: Optional[str] = None
-           ...:         self.field_2: Optional[str] = None
+           ...:         self.field_1: str | None = None
+           ...:         self.field_2: str | None = None
     """
 
     _instances: dict[int, "Storage"] = {}
@@ -64,7 +64,7 @@ class Storage:
                 raise BaseError(MESSAGE_DEPRICATED)
 
     def clean(self) -> None:
-        for field in self.__slots__:
+        for field in getattr(self, "__slots__"):
             setattr(self, field, None)
 
 
@@ -82,15 +82,15 @@ class State:
         if getattr(self, "__initialized", False):
             return
 
-        self.account_id = account_id
-        self.storage = None
-        self.key = None
-        self.validator: Optional[Callable] = None
-        self.callback: Optional[Callable] = None
+        self.account_id: int = account_id
+        self.storage: Storage | None = None
+        self.key: str | None = None
+        self.validator: Callable | None = None
+        self.callback: Callable | None = None
 
         setattr(self, "__initialized", True)
 
-    def set(self, *_, storage: Storage, key: str, validator: Optional[Callable] = None, callback: Callable) -> None:
+    def set(self, *_, storage: Storage, key: str, validator: Callable | None = None, callback: Callable) -> None:
         self.validator = validator
         self.callback = callback
         self.storage = storage

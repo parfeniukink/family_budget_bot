@@ -1,5 +1,4 @@
 from contextlib import suppress
-from typing import Optional
 
 from loguru import logger
 
@@ -26,7 +25,7 @@ class ConfigurationsCache:
         cls._CONFIGURATIONS[user] = configuration
 
     @classmethod
-    def get(cls, user: User) -> Optional[Configuration]:
+    def get(cls, user: User) -> Configuration | None:
         with suppress(KeyError):
             return cls._CONFIGURATIONS[user]
         return None
@@ -40,7 +39,7 @@ class ConfigurationsCRUD:
         if cached_configuration := ConfigurationsCache.get(user):
             return cached_configuration
 
-        data: Optional[dict] = database.fetchone(cls.__TABLE, column="user_id", value=user.id)
+        data: dict | None = database.fetchone(cls.__TABLE, column="user_id", value=user.id)
         if not data:
             raise ConfigurationError(
                 f"There is no configuration for user {user.username}. Please contact to developers"

@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from itertools import groupby
 from operator import attrgetter
-from typing import Iterable, Optional
+from typing import Iterable
 
 from db import database
 from equity import EquityCRUD
@@ -52,18 +52,18 @@ class IncomesService:
     __TABLE = "incomes"
 
     @classmethod
-    def get_detailed_incomes_message(cls, cached_users: dict[int, User], incomes: Optional[list[Income]]) -> str:
+    def get_detailed_incomes_message(cls, cached_users: dict[int, User], incomes: list[Income] | None) -> str:
         """Return costs by category in readable format"""
 
-        if not incomes:
+        if incomes is None:
             return ""
 
         result = ""
 
         for income in incomes:
-            user: Optional[User] = cached_users.get(income.user_id) or UsersCRUD.fetch_by_id(income.user_id)
+            user: User | None = cached_users.get(income.user_id) or UsersCRUD.fetch_by_id(income.user_id)
 
-            if not user:
+            if user is None:
                 raise IncomesError(INCOME_GET_NO_USER_ERROR.format(income=income))
 
             if user.account_id not in cached_users:
@@ -83,8 +83,8 @@ class IncomesService:
         return result
 
     @classmethod
-    def get_formatted_incomes(cls, incomes: Optional[list[Income]], title="📈 Total incomes") -> str:
-        if not incomes:
+    def get_formatted_incomes(cls, incomes: list[Income] | None, title="📈 Total incomes") -> str:
+        if incomes is None:
             return ""
 
         total_incomes: Decimal = sum(incomes)  # type: ignore

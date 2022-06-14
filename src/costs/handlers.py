@@ -1,6 +1,5 @@
 from contextlib import suppress
 from datetime import datetime
-from typing import Optional
 
 from telebot import types
 
@@ -184,9 +183,13 @@ async def del_confirmation_selected_callback_query(q: types.CallbackQuery):
 async def id_to_delete_selected_callback_query(q: types.CallbackQuery):
     storage = CostsStorage(q.from_user.id)
     storage.delete_id = q.data.replace(ExtraCallbackData.COST_ID_SELECTED.value, "")
-    cost: Optional[Cost] = CostsCRUD.get_by_id(storage.delete_id)
 
-    if not cost:
+    if storage.delete_id is None:
+        raise CostsError("id to delete is not set")
+
+    cost: Cost | None = CostsCRUD.get_by_id(storage.delete_id)
+
+    if cost is None:
         raise CostsError("Nu such cost in database")
 
     text = "\n".join(

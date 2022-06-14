@@ -5,6 +5,7 @@ from telebot import types
 from bot import CallbackMessages, bot
 from configurations.domain import (
     Configuration,
+    ConfigurationError,
     Configurations,
     ConfigurationsGeneralMenu,
     ConfigurationsMenu,
@@ -124,7 +125,11 @@ async def configuration_selected_callback_query(q: types.CallbackQuery):
     storage = ConfigurationsStorage(q.from_user.id)
     state = State(q.from_user.id)
     storage.configuration_name = q.data.replace(ExtraCallbackData.CONFIGURATION_SELECTED.value, "").lower()
-    configuration_name_repr = getattr(Configurations, storage.configuration_name.upper()).value
+
+    if not storage.configuration_name:
+        raise ConfigurationError("Configuration name is not set")
+
+    configuration_name_repr: str = getattr(Configurations, storage.configuration_name.upper()).value
 
     # NOTE: if user selects the default currency configuration the bot shows 2 buttons with possible options
     if storage.configuration_name == Configurations.DEFAULT_CURRENCY.name.lower():

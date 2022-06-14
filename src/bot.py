@@ -1,5 +1,3 @@
-from typing import Optional
-
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
 from telebot.storage.memory_storage import StateMemoryStorage
@@ -15,9 +13,7 @@ bot = AsyncTeleBot(API_KEY, state_storage=StateMemoryStorage())
 
 class CallbackMessages:
     @staticmethod
-    async def edit(
-        q: types.CallbackQuery, text: str, reply_markup: Optional[types.InlineKeyboardMarkup] = None
-    ) -> None:
+    async def edit(q: types.CallbackQuery, text: str, reply_markup: types.InlineKeyboardMarkup | None = None) -> None:
         extra_payload = {}
 
         if reply_markup:

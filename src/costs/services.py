@@ -3,7 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from itertools import groupby
 from operator import attrgetter
-from typing import Iterable, Optional
+from typing import Iterable
 
 from categories import CategoriesService, Category
 from configurations import Configuration, ConfigurationsCRUD
@@ -19,8 +19,8 @@ class CostsCRUD:
     __TABLE = "costs"
 
     @classmethod
-    def get_by_id(cls, cost_id: str) -> Optional[Cost]:
-        data: Optional[dict] = database.fetchone(cls.__TABLE, "id", cost_id)
+    def get_by_id(cls, cost_id: str) -> Cost | None:
+        data: dict | None = database.fetchone(cls.__TABLE, "id", cost_id)
         return Cost(**data) if data else None
 
     @classmethod
@@ -33,11 +33,11 @@ class CostsService:
     __TABLE = "costs"
 
     def __init__(self, account_id: int) -> None:
-        self._user: Optional[User] = UsersCRUD.fetch_by_account_id(account_id)
-        self._category: Optional[Category] = None
-        self._date: Optional[date] = None
-        self._text: Optional[str] = None
-        self._value: Optional[Decimal] = None
+        self._user: User | None = UsersCRUD.fetch_by_account_id(account_id)
+        self._category: Category | None = None
+        self._date: date | None = None
+        self._text: str | None = None
+        self._value: Decimal | None = None
 
     @classmethod
     def save_costs(cls, storage: CostsStorage) -> Cost:
@@ -68,7 +68,7 @@ class CostsService:
 
     @staticmethod
     def get_formatted_cost(cost: Cost) -> str:
-        category: Optional[Category] = CategoriesService.get_by_id(cost.category_id)
+        category: Category | None = CategoriesService.get_by_id(cost.category_id)
         user = UsersCRUD.fetch_by_id(cost.user_id)
 
         if not user:
@@ -94,7 +94,7 @@ class CostsService:
         return groupby(sorted(costs, key=attrgetter(attr)), key=attrgetter(attr))
 
     @classmethod
-    def get_monthly_costs(cls, date: str, category: Optional[Category] = None) -> dict[str, list[Cost]]:
+    def get_monthly_costs(cls, date: str, category: Category | None = None) -> dict[str, list[Cost]]:
         """
         Return the list of costs for the specific month by currency.
         Used mostly for analytics.

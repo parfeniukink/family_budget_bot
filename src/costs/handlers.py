@@ -15,7 +15,7 @@ from costs.domain import (
     CostsStorage,
     ExtraCallbackData,
 )
-from costs.keyboards import ids_keyboard
+from costs.keyboards import cost_sources_keyboard, ids_keyboard
 from costs.services import CostsCRUD, CostsService
 from dates import dates_keyboard, exist_dates_keyboard
 from finances import Currencies
@@ -88,6 +88,7 @@ async def date_add_selected_callback_query(q: types.CallbackQuery):
 @base_error_handler
 async def category_add_selected_callback_query(q: types.CallbackQuery):
     storage = CostsStorage(q.from_user.id)
+
     category_name = q.data.replace(ExtraCallbackData.ADD_CATEGORYADD_SELECTED.value, "")
     storage.category = CategoriesService.get_by_name(category_name)
 
@@ -137,11 +138,14 @@ async def value_entered_callback(m: types.Message):
     state = State(m.from_user.id)
     state.set(storage=storage, key="description", validator=None, callback=description_entered_callback)
 
+    user = UsersCRUD.fetch_by_account_id(m.from_user.id)
+    configuration = ConfigurationsCRUD.fetch(user)
+
     storage.trash_messages.add(m.id)
     sent_message = await bot.send_message(
         text="Enter the description and press Enter",
         chat_id=m.chat.id,
-        reply_markup=types.ReplyKeyboardRemove(),
+        reply_markup=cost_sources_keyboard(configuration),
     )
     storage.trash_messages.add(sent_message.id)
 

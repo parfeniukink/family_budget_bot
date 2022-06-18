@@ -19,6 +19,7 @@ class ConfigurationsMenu(Enum):
 
 class Configurations(Enum):
     DEFAULT_CURRENCY = "Default currency"
+    COST_SOURCES = "Costs sources"
     INCOME_SOURCES = "Money incomes sources"
     KEYBOARD_DATES_AMOUNT = "The amount of dates in keyboard"
 
@@ -34,6 +35,7 @@ class Configuration(Model):
     id: int
     default_currency: str
     income_sources: str | None
+    cost_sources: str | None
     keyboard_dates_amount: int
     user_id: int
 

@@ -176,6 +176,7 @@ async def value_entered_callback(m: types.Message):
     storage = IncomesStorage(m.from_user.id)
     state = State(m.from_user.id)
     state.set(storage=storage, key="description", validator=None, callback=description_entered_callback)
+
     user = UsersCRUD.fetch_by_account_id(m.from_user.id)
     configuration = ConfigurationsCRUD.fetch(user)
 

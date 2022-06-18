@@ -83,8 +83,8 @@ class IncomesService:
         return result
 
     @classmethod
-    def get_formatted_incomes(cls, incomes: list[Income] | None, title="📈 Total incomes") -> str:
-        if incomes is None:
+    def get_formatted_incomes(cls, incomes: list[Income], title="📈 Total incomes") -> str:
+        if not incomes:
             return ""
 
         total_incomes: Decimal = sum(incomes)  # type: ignore

@@ -10,8 +10,7 @@ from shared.keyboards import add_restart_button
 @add_restart_button
 def cost_sources_keyboard(configuration: Configuration) -> types.ReplyKeyboardMarkup:
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    sources = (configuration.cost_sources or "").split(",")
+    sources = [item for el in (configuration.cost_sources or "").split(",") if (item := el.strip())]
 
     for source in sources:
         markup.add(types.KeyboardButton(source))

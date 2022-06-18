@@ -13,7 +13,7 @@ class Category(Model):
 
 
 class CategoriesMapping(str, Enum):
-    FOOD = "🍽 Foo"
+    FOOD = "🍽 Food"
     RESTAURANTS = "🥗 Restaurants"
     FOOD_DELIVERY = "🍔 Food delivery"
     Roads = "🚌 Roads"
@@ -21,11 +21,13 @@ class CategoriesMapping(str, Enum):
     CAR = "🚙 Car"
     FUEL = "⛽️ Fuel"
     HOUSEHOLD = "🪴 Household"
+    HEALTH = "♥️ Health"
     RENTS = "🤝 Rents"
     SERVICES = "💳 Services"
-    LEISURE = "🏝 Leisur"
+    LEISURE = "🏝 Leisure"
     TECHNICAL_STUFF = "💻 Technical stuff"
     EDUCATION = "📚 Education"
     GIFTS = "🎁 Gifts"
     OTHER = "📦 Other"
+    BUSINESS = "💼 Business"
     CURRENCY_TRANSACTIONS = "🔄 Currency transactions"

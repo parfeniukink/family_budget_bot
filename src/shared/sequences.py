@@ -6,7 +6,7 @@ from shared.domain import Model
 _Member = TypeVar("_Member", dict, Model)
 
 
-def build_dict_from_sequence(seq: Sequence[_Member], key: str) -> dict[Hashable, _Member]:
+def build_dict_from_sequence(seq: Iterable[_Member], key: str) -> dict[Hashable, _Member]:
     """
     Build dict from sequence like list to have O(1) complexity for finding values by a specific key.
     Index is used to compare elements with same ID.

@@ -8,6 +8,6 @@ def categories_keyboard(callback_data: str) -> types.InlineKeyboardMarkup:
         [
             types.InlineKeyboardButton(text=category.name, callback_data="".join((callback_data, category.name))),
         ]
-        for category in CategoriesService.CACHED_CATEGORIES
+        for category in CategoriesService.get_ordered()
     ]
     return types.InlineKeyboardMarkup(keyboard)

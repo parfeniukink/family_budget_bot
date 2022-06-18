@@ -1,18 +1,21 @@
-from categories.domain import CategoriesError, Category
+from typing import Iterable
+
+from categories.domain import CategoriesError, CategoriesMapping, Category
 from db import database
+from shared.sequences import build_dict_from_sequence
 
 
 class CategoriesCache(type):
     __TABLE = "categories"
 
     @classmethod
-    def get_categories(cls) -> list[Category]:
+    def __fetch_categories(cls) -> list[Category]:
         data = [Category(**item) for item in database.fetchall(cls.__TABLE)]
         return data
 
     def __getattr__(cls, attr):
         if attr == "CACHED_CATEGORIES":
-            data = cls.get_categories()
+            data = cls.__fetch_categories()
             setattr(cls, attr, data)
             return data
         raise AttributeError(attr)
@@ -34,3 +37,13 @@ class CategoriesService(metaclass=CategoriesCache):
             if category.id == id:
                 return category
         return None
+
+    @classmethod
+    def get_ordered(cls) -> Iterable[Category]:
+        """Returns cached categories in CategoriesMapping order"""
+
+        categories_by_name: dict[str, Category] = build_dict_from_sequence(
+            cls.CACHED_CATEGORIES,
+            key="name",
+        )  # type: ignore
+        return [categories_by_name[name] for name in CategoriesMapping.values()]

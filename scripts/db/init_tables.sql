@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS configurations(
     id SERIAL PRIMARY KEY,
     default_currency VARCHAR(3) NOT NULL,
     income_sources VARCHAR(255),
+    cost_sources VARCHAR(255),
     keyboard_dates_amount NUMERIC NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id)
@@ -63,6 +64,7 @@ INSERT INTO categories (name) VALUES
     ('🚙 Car'),
     ('⛽️ Fuel'),
     ('🪴 Household'),
+    ('♥️ Health'),
     ('🤝 Rents'),
     ('💳 Services'),
     ('🏝 Leisure'),
@@ -70,6 +72,7 @@ INSERT INTO categories (name) VALUES
     ('📚 Education'),
     ('🎁 Gifts'),
     ('📦 Other'),
+    ('💼 Business'),
     ('🔄 Currency transactions');
 
 INSERT INTO equity (currency, value) VALUES

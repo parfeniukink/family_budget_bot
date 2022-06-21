@@ -25,7 +25,13 @@ class CostsCRUD:
 
     @classmethod
     def delete_by_id(cls, cost_id: str) -> None:
-        database.delete(cls.__TABLE, "id", cost_id)
+        data: dict = database.delete(cls.__TABLE, "id", cost_id)
+        cost = Cost(**data)
+        EquityCRUD.update(
+            operation=Operations.ADD,
+            value=cost.value,
+            currency=cost.currency,
+        )
 
 
 class CostsService:
@@ -141,11 +147,3 @@ class CostsService:
         costs = [Cost(**item) for item in data]
 
         return {currency: list(costs_iter) for currency, costs_iter in cls.get_costs_by_currency(costs)}
-
-    @classmethod
-    def get_by_id(cls, cost_id: str) -> None:
-        database.delete(cls.__TABLE, "id", cost_id)
-
-    @classmethod
-    def delete_by_id(cls, cost_id: str) -> None:
-        database.delete(cls.__TABLE, "id", cost_id)

@@ -177,7 +177,7 @@ async def del_confirmation_selected_callback_query(q: types.CallbackQuery):
         if storage.delete_id is None:
             raise CostsError(MESSAGE_DEPRICATED)
 
-        CostsService.delete_by_id(storage.delete_id)
+        CostsCRUD.delete_by_id(storage.delete_id)
 
         await CallbackMessages.edit(q=q, text="✅ Cost deleted")
 

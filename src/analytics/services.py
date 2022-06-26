@@ -86,7 +86,8 @@ class AnalitycsService:
         # #################################
 
         # NOTE: Add a separator
-        text += ("\n" * 2) + ("-" * 10)
+        if real_costs:
+            text += "\n\n" + ("-" * 10)
 
         # NOTE: Add costs persentage in order to see it with salary relation
         real_costs_percentage = (

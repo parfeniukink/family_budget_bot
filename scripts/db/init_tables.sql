@@ -73,6 +73,7 @@ INSERT INTO categories (name) VALUES
     ('🎁 Gifts'),
     ('📦 Other'),
     ('💼 Business'),
+    ('💸 Debts'),
     ('🔄 Currency transactions');
 
 INSERT INTO equity (currency, value) VALUES

@@ -30,4 +30,5 @@ class CategoriesMapping(str, Enum):
     GIFTS = "🎁 Gifts"
     OTHER = "📦 Other"
     BUSINESS = "💼 Business"
+    DEBTS = "💸 Debts"
     CURRENCY_TRANSACTIONS = "🔄 Currency transactions"

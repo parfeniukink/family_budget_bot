@@ -1,12 +1,43 @@
-# Family budget Telegram bot
+# Family Budget Bot
 
-✅ This is a family budget bot, developed for Telegram messenger
+</br>
 
-✅ Use it as collaboration tool to save costs and incomes
+<p align="left">
 
-✅ Also, you can find pretty useful monthly or annually analytics
+<a href="https://app.circleci.com/pipelines/github/parfeniukink/family_budget_bot" target="_blank">
+    <img src="https://circleci.com/gh/parfeniukink/family_budget_bot.svg?style=svg">
+</a>
+
+<a href="https://github.com/parfeniukink/family_budget_bot/releases" target="_blank">
+    <img src="https://img.shields.io/github/license/parfeniukink/family_budget_bot?color=green">
+</a>
+
+<a href="https://shields.io/" target="_blank">
+    <img src="https://img.shields.io/badge/python_versions-3.10+-blue.svg">
+</a>
+
+<a href="https://github.com/parfeniukink/family_budget_bot/releases" target="_blank">
+    <img src="https://img.shields.io/github/v/release/parfeniukink/family_budget_bot">
+</a>
+
+</p>
+
+
+</br>
+
+
+<b><p align="left">✔️ A family budget bot developed for Telegram users</p>
+
+<p align="left">✔️ Shared database with specified members</p>
+
+<p align="left">✔️ Montly & annually analytics</p></b>
+
+
+</br>
+
 
 ## Table of content
+
 1. [Setup the environment](#setup-the-environment)
 
 2. [Setup the application](#setup-the-application)
@@ -19,7 +50,7 @@
 
     4.2 [Restore from dump](#restore-from-dump)
 
-    4.3 [Upgrade to the release 3 from the release 2](#upgrade-to-the-release-3-from-the-release-2)
+    4.3 [Upgrade release version](#upgrade-release-version)
 
 4. [Images](#images)
 
@@ -100,6 +131,10 @@ python src/run.py
 
 ## Creating database dump cronjobs
 
+> 🤔 If you have cloud storage that synchronizes with your local folder would be great to set up copying from the external server right into your cloud folder.
+>
+> 👉🏻 For that you can create an independent cronjob on server that creates database dumps and another cronjob that works on your local machine that copying it from the server. (P.S. I choose this flow as far I found it better not to give extra access to the server)
+
 #### Create a job on the hosting server
 
 1. Connect to the server via SSH
@@ -129,7 +164,7 @@ crontab -e
 *   */5   *   *   *   scp <username>@<server>:/root/family_budget_bot/dump.sql $HOME/dumps/family_budget_dump.sql
 ```
 
-2.2. Add a new job for copying dump from the server every **5** hours on MacOS to iCloud folder
+2.2. Add a new job for copying dump from the server every **5** hours on MacOS to the iCloud folder
 ```bash
 *   */5   *   *   *   scp <username>@<server>:/root/family_budget_bot/dump.sql $HOME/Library/Mobile\ Documents/com~apple~CloudDocs/family_budget_dump.sql
 ```
@@ -142,28 +177,43 @@ Connect to the PostgreSQL with psql
 $ docker-compose exec postgrers psql
 ```
 
-Exec commands below
+Remove old data
 ```postgres
 postgres=# DROP DATABASE family_budget;
 postgres=# CREATE DATABASE family_budget;
 postgres=# \q
 ```
 
-Ingest data into database
+Ingest data into the database
 ```bash
 docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ```
 
-### Upgrade to the release 3 from the release 2
-💡 It is a safe operation for moving to the individual configuration system
-   that is not realized in the 2 release.
+### Upgrade release version
 
-📍 Make sure that you setted the `PYTHONPATH` in the `.env` file
+> Currently we don't support any migration tools like alembic for upgrade or downgrade the database.
+>
+> But anyway, you can use custom created migration scripts that work only in case you want to upgrade.
 
-⚠️  Don't do this if you installed 3 release from the scratch
+
+💡 If I use version `2` and I'd like to upgrade to `3+`
+
+📍 Make sure that you set the `PYTHONPATH` in the `.env` file
+
+⚠️  You can not upgrade from version `2` to version `4`
+
+⚠️  If you have version `3` and you would like to upgrade to the version `4.2` first you have to upgrade to the version `4.0`
+
+</br>
+
+👇 <b><u>Upgrade could be done just running the specific script</u></b> 👇
 
 ```python
-docker-compose exec bot python scripts/db/release_3_migration.py
+# Using Docker
+docker-compose exec bot python scripts/db/release_<version>_migration.py
+
+# With NO Docker
+python scripts/db/release_<version>_migration.py
 ```
 
 

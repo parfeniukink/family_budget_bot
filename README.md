@@ -36,7 +36,7 @@
 </br>
 
 
-## Table of content
+## 📒 Table of content
 
 1. [Setup the environment](#setup-the-environment)
 
@@ -54,16 +54,17 @@
 
 4. [Images](#images)
 
-# Setup the environment
+# ⚒ Setup the environment
 
 ### Create environment configuration file based on `.env.example`
 ```bash
 cp .env.example .env
 ```
 
-### Install [pre-commit hooks](https://pre-commit.com/#install)
-> Note: Install pre-commit tool before
+### Setup [pre-commit hooks](https://pre-commit.com/#install)
+
 ```bash
+# Add to the Git
 pre-commit install
 ```
 
@@ -78,9 +79,9 @@ pre-commit install
 
 
 
-# Setup the application
+# ⚒ Setup the application
 
-### with Docker
+### 🐳 with Docker
 
 🔗  [Install Docker](https://docs.docker.com/get-docker/)
 
@@ -105,9 +106,9 @@ poetry shell
 
 
 
-# Usage
+# 🤔 Usage
 
-### With Docker
+### 🐳 With Docker
 
 ```bash
 # Run the container
@@ -127,9 +128,9 @@ python src/run.py
 
 
 
-# Additional information
+# 🐘 Additional information
 
-## Creating database dump cronjobs
+## 🤖 Creating database dump cronjobs
 
 > 🤔 If you have cloud storage that synchronizes with your local folder would be great to set up copying from the external server right into your cloud folder.
 >
@@ -189,7 +190,7 @@ Ingest data into the database
 docker-compose -T exec postgrers psql -U postgres family_budget < dump.sql
 ```
 
-### Upgrade release version
+### ⬆️ Upgrade release version
 
 > Currently we don't support any migration tools like alembic for upgrade or downgrade the database.
 >
@@ -217,7 +218,7 @@ python scripts/db/release_<version>_migration.py
 ```
 
 
-# Images
+# 🌆 Images
 
 
 ### Configurations

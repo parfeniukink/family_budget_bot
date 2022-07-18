@@ -237,19 +237,20 @@ python scripts/db/release_<version>_migration.py
 <image src="https://media.giphy.com/media/uMfLHU8ALHtVARoCY7/giphy.gif" width="400"/>
 
 
+
 ### Analytics
 
-<image src="https://media.giphy.com/media/GHclnxSDsmkwglrYcR/giphy.gif
-" width="400"/>
+<image src="https://media.giphy.com/media/GHclnxSDsmkwglrYcR/giphy.gif" width="400"/>
+
 
 
 ### Adding and removnig costs process
-
-
 
 <image align="left" src="https://media.giphy.com/media/arNzYpAUU75DyOY5fH/giphy.gif" width="400"/>
 <image src="https://media.giphy.com/media/1hrS1Zkbm3soRklWFI/giphy.gif" width="400"/>
 
 
+
 ### Adding incomes
+
 <image src="https://media.giphy.com/media/q2BxepdQfxC3x9J3QQ/giphy.gif" width="400"/>

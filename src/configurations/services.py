@@ -60,12 +60,13 @@ class ConfigurationsCRUD:
         update_data: dict = database.update(
             cls.__TABLE,
             data=(storage.configuration_name, storage.value),
-            condition=("user_id", user.id),  # type: ignore
+            condition=("user_id", user.id),
         )
         configuration: Configuration = Configuration(**update_data)
         ConfigurationsCache.set(user, configuration)
 
         logger.debug("Configurations table injected")
+
         return configuration
 
     @classmethod

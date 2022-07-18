@@ -1,5 +1,4 @@
 import asyncio
-import warnings
 from time import sleep
 
 from loguru import logger
@@ -12,8 +11,6 @@ from equity.handlers import *  # noqa
 from incomes.handlers import *  # noqa
 from shared.handlers import *  # noqa
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
 logger.add("fbb.log", rotation="50 MB")
 
 
@@ -24,18 +21,20 @@ async def start_bot():
     except Exception as err:
         logger.error(err)
         logger.error("🔴 Bot is down.\nRestarting...")
-        logger.info("Sleeping for 30 seconds")
+        logger.info("🕟 Sleeping for 5 seconds")
         sleep(5)
         await start_bot()
 
 
+# NOTE: Template for future background integration workers
 async def integrations_background():
-    while True:
-        await asyncio.sleep(300)
-        logger.debug("Integrations engine")
+    logger.debug("Integrations engine")
 
 
-loop = asyncio.get_event_loop()
-tasks = [start_bot(), integrations_background()]
-results = loop.run_until_complete(asyncio.gather(*tasks))
-loop.close()
+async def main():
+    tasks = [start_bot(), integrations_background()]
+    await asyncio.gather(*tasks)
+
+
+# NOTE: Run the application
+asyncio.run(main())

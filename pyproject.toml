@@ -6,7 +6,7 @@ authors = ["Dmytro Parfeniuk <parfeniukink@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pyTelegramBotAPI = "4.4.0"
+pyTelegramBotAPI = "4.6.0"
 loguru = "0.6.0"
 psycopg2-binary = "2.9.3"
 pydantic = "1.9.0"
@@ -16,7 +16,7 @@ aiohttp = "3.8.1"
 flake8 = "^4.0.1"
 black = "^22.3.0"
 isort = "^5.10.1"
-ipdb = "^0.13.9"
+pudb = "^2022.1.1"
 openpyxl = "^3.0.9"
 mypy = "0.960"
 

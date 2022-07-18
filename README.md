@@ -219,20 +219,37 @@ python scripts/db/release_<version>_migration.py
 
 # Images
 
-### Adding and removnig costs process
-<image align="left" src="https://media.giphy.com/media/CEhnGApzX3bXDpU5AF/giphy.gif" width="400"/>
-<image src="https://media.giphy.com/media/WqsBoCdBOGB64nkY97/giphy.gif" width="400"/>
-
-### Adding incomes process
-<image src="https://media.giphy.com/media/WqsBoCdBOGB64nkY97/giphy.gif" width="400"/>
-
-### Analytics
-<image src="https://media.giphy.com/media/YsKJS5RFgoE4BW0Zww/giphy.gif" width="400"/>
-
-### Equity
-<image src="https://media.giphy.com/media/RNzxxoBc0uwx6GB2ro/giphy.gif" width="400"/>
 
 ### Configurations
-<image align="left" src="https://media.giphy.com/media/4nmWMYqB1SW2bulDlJ/giphy.gif" width="300"/>
-<image align="left" src="https://media.giphy.com/media/icf4oMaqsNYwCRvh5n/giphy.gif" width="300"/>
-<image src="https://media.giphy.com/media/lD1EDZNRi7IbOe2Vah/giphy.gif" width="300"/>
+
+> Here you can easily take a look all or change bot configurations
+
+##### Allowed configurations:
+
+👉🏻 Number of dates behind for adding costs & taking a look the analytics & removings costs
+
+👉🏻 Default currency that applies when you add cost (not to set it every time manually)
+
+👉🏻 Costs sources that shows you keyboard with text snippets not to enter common stuff every time
+
+👉🏻 Incomes sources that shows you keyboard with text snippets not to enter common stuff every time
+
+<image src="https://media.giphy.com/media/uMfLHU8ALHtVARoCY7/giphy.gif" width="400"/>
+
+
+### Analytics
+
+<image src="https://media.giphy.com/media/GHclnxSDsmkwglrYcR/giphy.gif
+" width="400"/>
+
+
+### Adding and removnig costs process
+
+
+
+<image align="left" src="https://media.giphy.com/media/arNzYpAUU75DyOY5fH/giphy.gif" width="400"/>
+<image src="https://media.giphy.com/media/1hrS1Zkbm3soRklWFI/giphy.gif" width="400"/>
+
+
+### Adding incomes
+<image src="https://media.giphy.com/media/q2BxepdQfxC3x9J3QQ/giphy.gif" width="400"/>

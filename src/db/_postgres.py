@@ -96,21 +96,12 @@ class Postgres:
 
     def insert(self, table: str, data: dict[str, Any]) -> dict:
         columns = ", ".join(str(k) for k in data.keys())
-        values = ", ".join(
-            [
-                v
-                if v.isdigit()
-                else "".join(
-                    ["'", v, "'"],
-                )
-                for value in data.values()
-                if (v := str(value)) is not None
-            ]
-        )
-        q = f"INSERT INTO {table} ({columns}) VALUES ({values}) RETURNING *"
+        placeholders = ", ".join("%s" for _ in data.keys())
+
+        q = f"INSERT INTO {table} ({columns}) VALUES ({placeholders}) RETURNING *"
 
         with self.cursor() as cursor:
-            cursor.execute(q)
+            cursor.execute(q, tuple(data.values()))
             execution_result = cursor.fetchone()
 
         result = {k[0]: v for k, v in zip(cursor.description, execution_result)}
@@ -118,13 +109,11 @@ class Postgres:
         return result
 
     def update(self, table: str, data: tuple[str, Any], condition: tuple[str, Any]) -> dict:
-        f_data = "=".join([data[0], fd if (fd := str(data[1])).isdigit() else "".join(["'", fd, "'"])])
-        f_condition = "=".join([condition[0], fd if (fd := str(condition[1])).isdigit() else "".join(["'", fd, "'"])])
-
-        q = f"UPDATE {table} SET {f_data} WHERE {f_condition} RETURNING *"
+        q = f"UPDATE {table} SET {data[0]}=%s WHERE {condition[0]}=%s RETURNING *"
+        payload = (data[1], condition[1])
 
         with self.cursor() as cursor:
-            cursor.execute(q)
+            cursor.execute(q, payload)
             execution_result = cursor.fetchone()
 
         result = {k[0]: v for k, v in zip(cursor.description, execution_result)}

@@ -1,6 +1,5 @@
 from telebot import types
 from telebot.async_telebot import AsyncTeleBot
-from telebot.storage.memory_storage import StateMemoryStorage
 
 from env import Env
 from settings import DEFAULT_SEND_SETTINGS
@@ -8,7 +7,7 @@ from settings import DEFAULT_SEND_SETTINGS
 API_KEY = Env.str("API_KEY", default="invalid")
 TELEGRAM_MESSAGE_MAX_LEN = 4096
 
-bot = AsyncTeleBot(API_KEY, state_storage=StateMemoryStorage())
+bot = AsyncTeleBot(API_KEY)
 
 
 class CallbackMessages:

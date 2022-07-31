@@ -57,14 +57,20 @@ class AnalitycsService:
 
         currency_transaction_category: Category = CategoriesService.get_by_name(CategoriesMapping.CURRENCY_TRANSACTIONS)
         debts_category: Category = CategoriesService.get_by_name(CategoriesMapping.DEBTS)
+        busincess_category: Category = CategoriesService.get_by_name(CategoriesMapping.BUSINESS)
 
-        # NOTE: Get the real costs, currenty transaction costs and debts separately
+        # NOTE: Get the REAL COSTS, CURRENCY TRANSACTIONS, DEBTS and BUSINESS separately
         currency_transaction_costs: list[Cost] = [
             cost for cost in costs if cost.category_id == currency_transaction_category.id
         ]
         debts_costs: list[Cost] = [cost for cost in costs if cost.category_id == debts_category.id]
+        business_costs: list[Cost] = [cost for cost in costs if cost.category_id == busincess_category.id]
+
+        # NOTE: Costs above are not included
         real_costs: list[Cost] = [
-            cost for cost in costs if cost.category_id not in [currency_transaction_category.id, debts_category.id]
+            cost
+            for cost in costs
+            if cost.category_id not in [currency_transaction_category.id, debts_category.id, busincess_category.id]
         ]
 
         real_costs_sum: Decimal = sum(real_costs)  # type: ignore
@@ -72,8 +78,8 @@ class AnalitycsService:
         # NOTE: Add USD dollar sign if needed
         sign = "$" if costs[0].currency == Currencies.get_database_value("USD") else ""
 
-        for id, costs_group in cls.__costs_by_category(real_costs):
-            category: Category = categories_by_id[id]
+        for id_, costs_group in cls.__costs_by_category(real_costs):
+            category: Category = categories_by_id[id_]
             total_real_costs: Decimal = sum(costs_group)  # type: ignore
             text += "".join(
                 ("\n", LINE_ITEM.format(key=category.name, value=get_number_in_frames((total_real_costs))), sign)
@@ -89,12 +95,12 @@ class AnalitycsService:
         if real_costs:
             text += "\n\n" + ("-" * 10)
 
-        # NOTE: Add costs persentage in order to see it with salary relation
+        # NOTE: Add REAL COSTS persentage in order to see it with salary relation
         real_costs_percentage = (
             ((real_costs_sum / total_salary) * 100).quantize(Decimal("0.01")) if total_salary else Decimal("0")
         )
 
-        # NOTE: Add real costs, currency transactions costs and debts costs blocks
+        # NOTE: Add real costs, currency transactions debts and business costs blocks
         text += cls.__get_costs_block(
             name="📉 Real costs", total=real_costs_sum, sign=sign, percent=real_costs_percentage
         )
@@ -104,6 +110,11 @@ class AnalitycsService:
             sign=sign,
         )
         text += cls.__get_costs_block(name=CategoriesMapping.DEBTS, total=sum(debts_costs), sign=sign)  # type: ignore
+        text += cls.__get_costs_block(
+            name=CategoriesMapping.BUSINESS,
+            total=sum(business_costs),  # type: ignore
+            sign=sign,
+        )
 
         return text
 
